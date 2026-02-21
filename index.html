@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="12WK Grind">
+  <meta name="theme-color" content="#080810" id="meta-theme">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>12-Week Gym Plan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="nav-logo">12WK</div>
+  <button class="nav-btn active" id="nav-home" onclick="showPage('home')">🏠 <span>Home</span></button>
+  <button class="nav-btn" id="nav-week" onclick="showPage('week')" style="display:none">📋 <span>Week</span></button>
+  <button class="nav-btn" id="nav-warmup" onclick="showPage('warmup')">🔥 <span>Warmup</span></button>
+  <button class="nav-btn" id="nav-hiit" onclick="showPage('hiit')">⚡ <span>HIIT</span></button>
+  <button class="nav-btn" id="nav-nutr" onclick="showPage('nutr')">🥗 <span>Nutrition</span></button>
+  <button class="nav-btn" id="nav-vol" onclick="showPage('vol')">📊 <span>Volume</span></button>
+  <button class="nav-btn" id="nav-pr" onclick="showPage('pr')">💪 <span>PRs</span></button>
+  <button class="nav-btn" id="nav-cal" onclick="showPage('cal')">📅 <span>Calendar</span></button>
+  <button class="nav-btn" id="nav-goals" onclick="showPage('goals')">🎯 <span>Goals</span></button>
+  <button class="nav-btn" id="nav-customize" onclick="showPage('customize')">⚙️ <span>Customize</span></button>
+  <div class="nav-spacer"></div>
+  <div class="nav-right">
+    <div class="nav-streak">🔥 <span id="streak-num">0</span></div>
+    <button class="nav-theme-btn" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">🌙</button>
+  </div>
+</nav>
+
+<!-- ── HOME PAGE ── -->
+<div id="page-home" class="page active">
+  <div id="today-banner-wrap"></div>
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-inner">
+      <div class="hero-eyebrow"><div class="hero-eyebrow-dot"></div>Fat Loss + Muscle Gain</div>
+      <h1>12-WEEK<br><span class="hl">GRIND</span></h1>
+      <p class="hero-sub">6 days/week · Every muscle 2× · Track every rep, every kilo.</p>
+    </div>
+  </div>
+  <div class="stat-strip">
+    <div class="stat-card c-green">
+      <div class="stat-icon">💪</div>
+      <div class="stat-val" id="stat-wks">0</div>
+      <div class="stat-label">Weeks Done</div>
+    </div>
+    <div class="stat-card c-blue">
+      <div class="stat-icon">✅</div>
+      <div class="stat-val" id="stat-ex">0</div>
+      <div class="stat-label">Exercises</div>
+    </div>
+    <div class="stat-card c-gold">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-val" id="stat-goals-cnt">0</div>
+      <div class="stat-label">Goals Crushed</div>
+    </div>
+    <div class="stat-card c-green2">
+      <div class="stat-icon">📈</div>
+      <div class="stat-val" id="stat-pct">0%</div>
+      <div class="stat-label">Complete</div>
+    </div>
+  </div>
+  <div class="home-section">
+    <div class="section-head">
+      <div class="section-title">Overall Progress</div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-top">
+        <div>
+          <div class="prog-label">Program Completion</div>
+          <div class="prog-sub" id="prog-sub">Just getting started</div>
+        </div>
+        <div class="prog-pct" id="prog-pct-big">0%</div>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="prog-dots" id="prog-dots"></div>
+    </div>
+  </div>
+  <div class="home-section">
+    <div class="section-head">
+      <div class="section-title">Body Weight</div>
+      <button class="section-action" onclick="showPage('goals')">+ Goal</button>
+    </div>
+    <div class="weight-card">
+      <div class="wstats-row">
+        <div class="wstat">
+          <div class="wstat-lbl">Starting</div>
+          <div class="wstat-val" id="wt-start">—</div>
+          <div class="wstat-sub" id="wt-start-sub">No data</div>
+        </div>
+        <div class="wstat">
+          <div class="wstat-lbl">Current</div>
+          <div class="wstat-val" id="wt-cur">—</div>
+          <div class="wstat-sub" id="wt-cur-sub">No data</div>
+        </div>
+        <div class="wstat">
+          <div class="wstat-lbl">Change</div>
+          <div class="wstat-val" id="wt-chg">—</div>
+          <div class="wstat-sub" id="wt-chg-sub">Log 2+ weeks</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-controls">
+          <div class="chart-title2">Weight Over Time</div>
+          <div class="unit-toggle">
+            <button class="unit-btn active" id="btn-kg" onclick="setUnit('kg')">KG</button>
+            <button class="unit-btn" id="btn-lbs" onclick="setUnit('lbs')">LBS</button>
+          </div>
+        </div>
+        <div id="chart-area"></div>
+      </div>
+      <div class="wlog-wrap" id="wlog-wrap"></div>
+    </div>
+  </div>
+  <div class="home-section">
+    <div class="section-head"><div class="section-title">12 Weeks</div></div>
+    <div class="weeks-grid" id="weeks-grid"></div>
+  </div>
+  <div class="home-section" style="padding-bottom:100px">
+    <div class="section-head"><div class="section-title">🔔 Daily Reminder</div></div>
+    <div class="notif-card">
+      <div class="notif-row">
+        <div class="notif-label">
+          Workout Reminder
+          <span>Get notified once daily while the app is open</span>
+        </div>
+        <label class="notif-toggle" title="Enable daily reminder">
+          <input type="checkbox" id="notif-toggle-inp" onchange="saveNotifSettings()">
+          <span class="notif-slider"></span>
+        </label>
+        <input type="time" class="notif-time-inp" id="notif-time-inp" value="07:00" onchange="saveNotifSettings()">
+        <button class="notif-save-btn" onclick="testNotification()">Test</button>
+      </div>
+      <div class="notif-status" id="notif-status"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── WEEK PAGE ── -->
+<div id="page-week" class="page">
+  <div class="wk-wrap">
+    <button class="wk-back" onclick="showPage('home')">← Back to Home</button>
+    <div class="wk-title">WEEK <span id="wk-num-title">1</span></div>
+    <div class="wk-meta">
+      <div class="wk-phase" id="wk-phase-badge">Foundation</div>
+      <div class="wk-prog-text"><strong id="wk-prog-pct">0%</strong> complete</div>
+    </div>
+    <div class="wk-guidance"><strong>This week:</strong> <span id="wk-guidance-txt"></span></div>
+    <div id="week-body"></div>
+  </div>
+</div>
+
+<!-- ── WARMUP PAGE ── -->
+<div id="page-warmup" class="page">
+  <div class="warmup-wrap">
+    <div class="warmup-header">
+      <h2>🔥 WARMUP</h2>
+      <p>Tap a muscle group to see the warm-up exercises. Always warm up before lifting!</p>
+    </div>
+    <div class="warmup-grid" id="warmup-grid"></div>
+    <div id="warmup-detail-container"></div>
+  </div>
+</div>
+
+<!-- ── HIIT PAGE ── -->
+<div id="page-hiit" class="page">
+  <div class="hiit-wrap">
+    <div class="hiit-header">
+      <h2>⚡ HIIT TRAINING</h2>
+      <p>Choose your goal and follow the guided workout with the built-in interval timer.</p>
+    </div>
+    <div class="hiit-goal-grid" id="hiit-goal-grid"></div>
+    <div id="hiit-detail-container"></div>
+    <div class="hiit-tips-section">
+      <div class="hiit-tips-title">HIIT TIPS</div>
+      <div class="hiit-tips-grid">
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">💧</div><div class="hiit-tip-text">Hydrate well before starting. Dehydration tanks performance fast.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">🔥</div><div class="hiit-tip-text">Always do a 5-min warmup. Cold muscles + HIIT = injury risk.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">📈</div><div class="hiit-tip-text">Progress by adding rounds, not shortening rest — quality matters.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">🛌</div><div class="hiit-tip-text">1–2 HIIT sessions per week is enough. Recovery is where you grow.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">⏱</div><div class="hiit-tip-text">Use the timer. Guessing interval lengths defeats the purpose.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">🎯</div><div class="hiit-tip-text">Full effort in work phases. If you can talk, push harder.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GOALS PAGE ── -->
+<div id="page-goals" class="page">
+  <div class="goals-wrap">
+    <div class="goals-header">
+      <h2>🎯 GOALS</h2>
+      <p>Set targets. Crush them.</p>
+    </div>
+    <div class="add-goal-card">
+      <div class="add-goal-title">➕ New Goal</div>
+      <div class="goal-form-row">
+        <div class="goal-field" style="flex:2;min-width:200px">
+          <label class="goal-field-lbl">Description</label>
+          <input class="goal-inp" id="goal-txt-inp" placeholder="e.g. Bench 80kg, lose 5kg…">
+        </div>
+        <div class="goal-field">
+          <label class="goal-field-lbl">Category</label>
+          <select class="goal-inp" id="goal-type-inp">
+            <option value="workout">💪 Workout</option>
+            <option value="weight">⚖️ Weight</option>
+            <option value="strength">🏋️ Strength</option>
+            <option value="other">⭐ Other</option>
+          </select>
+        </div>
+        <button class="goal-add-btn" onclick="addGoal()">+ Add</button>
+      </div>
+    </div>
+    <div class="goals-tabs">
+      <button class="goals-tab active" id="tab-active" onclick="switchGoalTab('active')">Active <span class="tab-cnt" id="cnt-active">0</span></button>
+      <button class="goals-tab" id="tab-done" onclick="switchGoalTab('done')">✓ Done <span class="tab-cnt" id="cnt-done">0</span></button>
+    </div>
+    <div class="goals-list" id="goals-list"></div>
+  </div>
+</div>
+
+<!-- ── PR PAGE ── -->
+<div id="page-pr" class="page">
+  <div class="pr-wrap">
+    <div class="pr-header">
+      <h2>💪 PERSONAL RECORDS</h2>
+      <p>Track your best lifts. A 🔥 badge appears whenever you set a new PR.</p>
+    </div>
+    <div class="pr-grid" id="pr-grid"></div>
+    <div class="pr-history">
+      <div class="pr-history-title">PR History</div>
+      <div class="pr-hist-list" id="pr-hist-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── VOLUME PAGE ── -->
+<div id="page-vol" class="page">
+  <div class="vol-wrap">
+    <div class="vol-header">
+      <h2>📊 MUSCLE VOLUME</h2>
+      <p>Sets per muscle group per week — stay balanced.</p>
+    </div>
+    <div class="vol-week-select" id="vol-week-select"></div>
+    <div class="vol-grid" id="vol-grid"></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:4px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2);margin-bottom:14px;">Weekly Volume Chart</div>
+      <div id="vol-chart-area"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CALENDAR PAGE ── -->
+<div id="page-cal" class="page">
+  <div class="cal-wrap">
+    <div class="cal-header">
+      <h2>📅 CALENDAR</h2>
+      <p>Your workout history at a glance.</p>
+    </div>
+    <div class="cal-legend">
+      <div class="cal-leg-item"><div class="cal-leg-dot green"></div> Completed</div>
+      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--orange)"></div> Partial</div>
+      <div class="cal-leg-item"><div class="cal-leg-dot grey"></div> Rest day</div>
+      <div class="cal-leg-item"><div class="cal-leg-dot trophy"></div> Week Trophy</div>
+    </div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+      <div class="cal-month-title" id="cal-month-title">February 2026</div>
+      <button class="cal-nav-btn" onclick="calNext()">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+</div>
+
+<!-- ── NUTRITION PAGE ── -->
+<div id="page-nutr" class="page">
+  <div class="nutr-wrap">
+    <div class="nutr-header">
+      <h2>🥗 NUTRITION</h2>
+      <p>7-day vegetarian meal plan · Track calories &amp; macros</p>
+    </div>
+
+    <!-- Calorie Ring -->
+    <div class="cal-summary">
+      <div class="cal-ring-wrap">
+        <svg class="cal-ring-svg" viewBox="0 0 100 100">
+          <circle class="cal-ring-bg" cx="50" cy="50" r="42"/>
+          <circle class="cal-ring-fill" id="cal-ring-fill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/>
+        </svg>
+        <div class="cal-ring-label">
+          <div class="cal-ring-num" id="cal-eaten">0</div>
+          <div class="cal-ring-sub">eaten</div>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div class="cal-stats">
+          <div class="cal-stat c-blue"><div class="cal-stat-val" id="macro-protein-val">0g</div><div class="cal-stat-lbl">Protein</div></div>
+          <div class="cal-stat c-orange"><div class="cal-stat-val" id="macro-carbs-val">0g</div><div class="cal-stat-lbl">Carbs</div></div>
+          <div class="cal-stat c-green"><div class="cal-stat-val" id="macro-fat-val">0g</div><div class="cal-stat-lbl">Fat</div></div>
+        </div>
+        <div class="macro-bars" style="margin-top:12px;margin-bottom:0;padding:12px 16px;">
+          <div class="macro-bar-row">
+            <div class="macro-bar-head"><span class="macro-bar-name">Protein</span><span class="macro-bar-val" id="mb-protein-val">0 / 100g</span></div>
+            <div class="macro-track"><div class="macro-fill protein" id="mb-protein" style="width:0%"></div></div>
+          </div>
+          <div class="macro-bar-row">
+            <div class="macro-bar-head"><span class="macro-bar-name">Carbs</span><span class="macro-bar-val" id="mb-carbs-val">0 / 200g</span></div>
+            <div class="macro-track"><div class="macro-fill carbs" id="mb-carbs" style="width:0%"></div></div>
+          </div>
+          <div class="macro-bar-row">
+            <div class="macro-bar-head"><span class="macro-bar-name">Fat</span><span class="macro-bar-val" id="mb-fat-val">0 / 60g</span></div>
+            <div class="macro-track"><div class="macro-fill fat" id="mb-fat" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="cal-goal-row">
+          <span class="cal-goal-lbl">Daily Goal:</span>
+          <input class="cal-goal-inp" id="cal-goal-inp" type="number" min="800" max="5000" value="1800">
+          <span class="cal-goal-lbl">kcal</span>
+          <button class="cal-set-goal-btn" onclick="setCalGoal()">Set</button>
+          <span style="font-size:11px;color:var(--text2)" id="cal-remaining-lbl"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Water tracker -->
+    <div class="water-card">
+      <div class="water-head">
+        <div class="water-title">💧 Water Intake</div>
+        <div class="water-val" id="water-val">0 / 8 glasses</div>
+      </div>
+      <div class="water-cups" id="water-cups"></div>
+      <div class="water-hist-wrap" id="water-hist-wrap"></div>
+    </div>
+
+    <!-- Day tabs -->
+    <div class="nutr-day-tabs" id="nutr-day-tabs"></div>
+
+    <!-- Meal items -->
+    <div id="nutr-meals"></div>
+  </div>
+</div>
+
+<!-- ── CUSTOMIZE PAGE ── -->
+<div id="page-customize" class="page">
+  <div class="cust-wrap">
+    <div class="cust-header">
+      <h2>⚙️ CUSTOMIZE</h2>
+      <p>Edit exercises for a specific day & week, or apply changes across all 12 weeks.</p>
+    </div>
+    <div id="customize-body"></div>
+  </div>
+</div>
+
+<!-- ── CUSTOMIZE MODAL ── -->
+<div class="cust-modal-overlay" id="cust-modal" onclick="if(event.target===this)closeCustomizeModal()">
+  <div class="cust-modal-box">
+    <div class="cust-modal-hd">
+      <div>
+        <div class="cust-modal-title" id="cust-modal-title">Edit Exercise</div>
+        <div class="cust-modal-day" id="cust-modal-day"></div>
+      </div>
+      <button class="cust-modal-close" onclick="closeCustomizeModal()">✕</button>
+    </div>
+    <div class="cust-modal-body">
+      <div class="cust-field">
+        <label class="cust-field-lbl">Apply to</label>
+        <select class="cust-sel" id="cust-week-sel"></select>
+      </div>
+      <div class="cust-field">
+        <label class="cust-field-lbl">Exercise Name</label>
+        <input class="cust-inp" id="cust-name-inp" type="text" placeholder="Exercise name">
+      </div>
+      <div class="cust-field">
+        <label class="cust-field-lbl">Sets × Reps</label>
+        <input class="cust-inp" id="cust-sets-inp" type="text" placeholder="e.g. 4×6–8">
+      </div>
+      <div class="cust-field">
+        <label class="cust-field-lbl">Alternative Exercise</label>
+        <input class="cust-inp" id="cust-alt-inp" type="text" placeholder="e.g. Push-ups">
+      </div>
+    </div>
+    <div class="cust-modal-footer">
+      <button class="cust-reset-btn" onclick="resetCustomizeModal()">🔄 Reset to Original</button>
+      <button class="cust-save-btn" onclick="saveCustomizeModal()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TIMER FAB ── -->
+<div class="timer-fab" id="timer-fab">
+  <div class="timer-panel" id="timer-panel">
+    <div class="hiit-status" id="hiit-status" style="display:none"></div>
+    <div class="timer-display" id="timer-display">1:30</div>
+    <div class="timer-label" id="timer-label">Rest Timer</div>
+    <div class="timer-presets">
+      <button class="timer-preset" onclick="setTimerPreset(60,'60s Rest')">60s</button>
+      <button class="timer-preset active" onclick="setTimerPreset(90,'90s Rest')">90s</button>
+      <button class="timer-preset" onclick="setTimerPreset(120,'120s Rest')">120s</button>
+      <button class="timer-preset" onclick="startHIIT()">HIIT</button>
+    </div>
+    <div class="timer-btns">
+      <button class="timer-btn" id="timer-start-btn" onclick="timerStartStop()">▶ Start</button>
+      <button class="timer-btn secondary" onclick="timerReset()">Reset</button>
+    </div>
+  </div>
+  <button class="timer-toggle-btn" onclick="toggleTimer()" title="Timer">⏱</button>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toast-icon">🎉</div>
+  <div class="toast-msg" id="toast-msg"></div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
