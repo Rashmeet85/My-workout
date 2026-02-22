@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12WK Admin — Program Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #06060e;
+    --bg2: #0d0d1a;
+    --bg3: #12121f;
+    --border: #1e1e35;
+    --border-hi: #2e2e55;
+    --accent: #c8ff00;
+    --accent2: #7c5cff;
+    --accent3: #ff4d6d;
+    --text: #e8e8f0;
+    --text2: #8888aa;
+    --text3: #5555777;
+    --red: #ff4d6d;
+    --green: #c8ff00;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── SCANLINE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.07) 2px, rgba(0,0,0,.07) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-logo {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .header-sep { color: var(--border-hi); font-size: 20px; }
+
+  .header-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .header-actions { margin-left: auto; display: flex; gap: 10px; }
+
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 18px;
+    border: 1px solid var(--border-hi);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn:hover { border-color: var(--text2); color: var(--text); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #b0e000; border-color: #b0e000; color: #000; }
+
+  .btn-danger {
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+
+  .btn-sm {
+    padding: 4px 10px;
+    font-size: 10px;
+  }
+
+  /* ─── LAYOUT ─── */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 60px);
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    padding: 6px 12px 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 12px;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    border-left: 2px solid transparent;
+    transition: all .15s;
+  }
+  .sidebar-item:hover { color: var(--text); background: rgba(255,255,255,.04); }
+  .sidebar-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(200,255,0,.06);
+  }
+
+  .sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* ─── MAIN ─── */
+  .main {
+    padding: 28px 32px;
+    overflow-y: auto;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ─── SECTION HEADERS ─── */
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    background: rgba(200,255,0,.1);
+    border: 1px solid rgba(200,255,0,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .panel-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .panel-sub {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .card-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(124,92,255,.15);
+    color: var(--purple);
+    border: 1px solid rgba(124,92,255,.25);
+  }
+
+  /* ─── FORM ELEMENTS ─── */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .form-row-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .form-row-4 {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+  label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  input, textarea, select {
+    background: var(--bg);
+    border: 1px solid var(--border-hi);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color .15s;
+    width: 100%;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 2px rgba(124,92,255,.15);
+  }
+
+  textarea { resize: vertical; min-height: 70px; }
+
+  select option { background: var(--bg2); }
+
+  /* ─── EXERCISE LIST ─── */
+  .ex-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .ex-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 24px 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+    transition: border-color .15s;
+  }
+  .ex-item:hover { border-color: var(--border-hi); }
+
+  .ex-drag {
+    cursor: grab;
+    color: var(--text2);
+    font-size: 18px;
+    user-select: none;
+    text-align: center;
+  }
+  .ex-drag:active { cursor: grabbing; }
+
+  .ex-item input {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .ex-actions { display: flex; gap: 6px; }
+
+  /* ─── WEEK GRID ─── */
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .week-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all .15s;
+    position: relative;
+  }
+  .week-card:hover { border-color: var(--border-hi); }
+  .week-card.selected {
+    border-color: var(--accent2);
+    background: rgba(124,92,255,.08);
+  }
+
+  .week-num {
+    font-family: var(--font-display);
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .week-phase {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  .week-note {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* ─── DAY TABS ─── */
+  .day-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .day-tab {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border-hi);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .day-tab:hover { color: var(--text); border-color: var(--text2); }
+  .day-tab.active {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    color: #fff;
+  }
+
+  /* ─── NUTRITION TABLE ─── */
+  .nutr-day-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .nutr-day-tab {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border-hi);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .nutr-day-tab:hover { color: var(--text); border-color: var(--text2); }
+  .nutr-day-tab.active {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: #000;
+    font-weight: 700;
+  }
+
+  .meal-section {
+    margin-bottom: 20px;
+  }
+
+  .meal-section-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text2);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .meal-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .meal-item-row {
+    display: grid;
+    grid-template-columns: 1fr 70px 70px 70px 70px auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .meal-item-row input { padding: 6px 10px; font-size: 12px; }
+
+  /* ─── EXPORT PANEL ─── */
+  .export-code {
+    background: var(--bg);
+    border: 1px solid var(--border-hi);
+    border-radius: 8px;
+    padding: 20px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #c8ff00;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre;
+    line-height: 1.6;
+  }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 6px;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: all .25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ─── PHASE COLORS ─── */
+  .phase-foundation { color: #60a5fa; }
+  .phase-build { color: #c8ff00; }
+  .phase-accumulate { color: #fbbf24; }
+  .phase-intensify { color: #fb923c; }
+  .phase-peak { color: #f87171; }
+  .phase-deload { color: #a78bfa; }
+  .phase-test { color: #e879f9; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+
+  /* ─── STATUS BAR ─── */
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text2);
+    z-index: 100;
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  .status-saved { color: var(--accent); }
+
+  .reorder-hint {
+    font-size: 11px;
+    color: var(--text2);
+    background: rgba(124,92,255,.08);
+    border: 1px solid rgba(124,92,255,.2);
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin-bottom: 14px;
+    font-family: var(--font-mono);
+  }
+
+  .macro-goals-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .macro-goal-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .macro-goal-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .add-row-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text2);
+    background: transparent;
+    border: 1px dashed var(--border-hi);
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+    width: 100%;
+    transition: all .15s;
+    margin-top: 8px;
+  }
+  .add-row-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .drag-over { border-color: var(--accent2) !important; background: rgba(124,92,255,.08) !important; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">12WK</div>
+  <div class="header-sep">/</div>
+  <div class="header-title">Program Admin Panel</div>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="exportDataJS()">⬇ Export data.js</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Workout</div>
+    <div class="sidebar-item active" onclick="showPanel('workouts')" id="nav-workouts">
+      <span class="sidebar-icon">💪</span> Weekly Days
+    </div>
+    <div class="sidebar-item" onclick="showPanel('phases')" id="nav-phases">
+      <span class="sidebar-icon">📅</span> 12-Week Phases
+    </div>
+    <div class="sidebar-section">Nutrition</div>
+    <div class="sidebar-item" onclick="showPanel('nutrition')" id="nav-nutrition">
+      <span class="sidebar-icon">🥗</span> Meal Plan
+    </div>
+    <div class="sidebar-item" onclick="showPanel('macros')" id="nav-macros">
+      <span class="sidebar-icon">📊</span> Macro Goals
+    </div>
+    <div class="sidebar-section">Export</div>
+    <div class="sidebar-item" onclick="showPanel('export')" id="nav-export">
+      <span class="sidebar-icon">📦</span> Export & Deploy
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main" style="padding-bottom:60px">
+
+    <!-- ══ WORKOUTS PANEL ══ -->
+    <div id="panel-workouts" class="panel active">
+      <div class="panel-header">
+        <div class="panel-icon">💪</div>
+        <div>
+          <div class="panel-title">Weekly Days</div>
+          <div class="panel-sub">Edit exercises, sets, and order for each training day</div>
+        </div>
+      </div>
+
+      <div class="day-tabs" id="day-tabs"></div>
+
+      <div id="day-editor"></div>
+    </div>
+
+    <!-- ══ PHASES PANEL ══ -->
+    <div id="panel-phases" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">📅</div>
+        <div>
+          <div class="panel-title">12-Week Phases</div>
+          <div class="panel-sub">Set phase names and coaching notes for each week</div>
+        </div>
+      </div>
+      <div class="week-grid" id="week-grid"></div>
+      <div id="week-editor"></div>
+    </div>
+
+    <!-- ══ NUTRITION PANEL ══ -->
+    <div id="panel-nutrition" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">🥗</div>
+        <div>
+          <div class="panel-title">Meal Plan</div>
+          <div class="panel-sub">Edit pre-gym fuel, meals, and snacks for each day</div>
+        </div>
+      </div>
+      <div class="nutr-day-tabs" id="nutr-day-tabs"></div>
+      <div id="nutr-editor"></div>
+    </div>
+
+    <!-- ══ MACROS PANEL ══ -->
+    <div id="panel-macros" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">📊</div>
+        <div>
+          <div class="panel-title">Macro Goals</div>
+          <div class="panel-sub">Daily targets shown on the Nutrition page</div>
+        </div>
+      </div>
+      <div class="macro-goals-row" id="macro-goals-row"></div>
+    </div>
+
+    <!-- ══ EXPORT PANEL ══ -->
+    <div id="panel-export" class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">📦</div>
+        <div>
+          <div class="panel-title">Export & Deploy</div>
+          <div class="panel-sub">Download a new data.js and replace the existing one on your site</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px">How to deploy your changes</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6">
+              1. Click <strong>⬇ Export data.js</strong> above (or the button below).<br>
+              2. Replace <code style="background:var(--bg3);padding:1px 5px;border-radius:3px">js/data.js</code> in your website folder with the downloaded file.<br>
+              3. Deploy / commit — all your changes are live instantly.
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="exportDataJS()">⬇ Export data.js</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Preview — data.js output</div>
+          <div class="card-badge">Live</div>
+        </div>
+        <div class="export-code" id="export-preview"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="status-bar">
+  <div class="status-dot"></div>
+  <span class="status-saved" id="status-text">All changes saved in memory</span>
+  <span style="margin-left:auto">Admin Panel · 12WK Grind</span>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  EMBEDDED DATA — mirrors data.js from your site
+// ══════════════════════════════════════════════════
+
+let PHASES = [
+  null,
+  "Learn form. Start light. Aim top of rep range with perfect technique.",
+  "Learn form. Start light. Aim top of rep range with perfect technique.",
+  "+2.5–5% load on compounds if all reps hit last week.",
+  "+2.5–5% load on compounds if all reps hit last week.",
+  "Add 1 set to first compound OR +2.5% load.",
+  "Add 1 set to first compound OR +2.5% load.",
+  "Progress again +2.5–5%. Keep rest strict.",
+  "Progress again +2.5–5%. Keep rest strict.",
+  "Heavier focus: lower rep range on compounds.",
+  "Heavier focus: lower rep range on compounds.",
+  "Optional deload: -20% volume if fatigued.",
+  "Test week: best clean reps/loads.",
+];
+
+let PHASE_NAMES = ["","Foundation","Foundation","Build","Build","Accumulate","Accumulate","Intensify","Intensify","Peak","Peak","Deload","Test"];
+
+let DAYS = [
+  {day:"Sunday",focus:"Chest + Triceps + Cardio",exercises:[
+    {name:"Flat Press (BB/Machine)",sets:"4×6–8",numSets:4,alt:"Push-ups / DB Press"},
+    {name:"Incline DB Press",sets:"3×8–10",numSets:3,alt:"Incline Machine Press"},
+    {name:"Cable/DB Flyes",sets:"3×12–15",numSets:3,alt:"Pec Deck"},
+    {name:"Close-Grip Press / Assisted Dips",sets:"3×8–10",numSets:3,alt:"Bench Dips (assisted)"},
+    {name:"Rope Triceps Pushdown",sets:"3×12–15",numSets:3,alt:"Overhead DB Extension"},
+    {name:"Cardio: Incline Walk",sets:"15–20 min",numSets:0,cardio:true,alt:"Elliptical steady 15–20 min"},
+  ]},
+  {day:"Monday",focus:"Back + Biceps + Cardio",exercises:[
+    {name:"Lat Pulldown / Assisted Pull-ups",sets:"4×6–8",numSets:4,alt:"Neutral-grip Pulldown"},
+    {name:"Seated Cable Row",sets:"3×8–10",numSets:3,alt:"Chest-Supported DB Row"},
+    {name:"One-arm DB Row",sets:"3×10/side",numSets:3,alt:"Machine Row (single-arm)"},
+    {name:"EZ-Bar/DB Curl",sets:"3×10–12",numSets:3,alt:"Cable Curl"},
+    {name:"Hammer Curl",sets:"3×10–12",numSets:3,alt:"Rope Hammer Curl"},
+    {name:"Cardio: Bike Intervals",sets:"16–20 min",numSets:0,cardio:true,alt:"Rowing intervals 12–16 min"},
+  ]},
+  {day:"Tuesday",focus:"Legs (Quads) + Core + Cardio",exercises:[
+    {name:"Squat OR Leg Press",sets:"4×6–8",numSets:4,alt:"Goblet Squat"},
+    {name:"Bulgarian Split Squat",sets:"3×8–10/leg",numSets:3,alt:"Reverse Lunges / Step-ups"},
+    {name:"Leg Extension",sets:"3×12–15",numSets:3,alt:"Spanish Squat (band)"},
+    {name:"Walking Lunges",sets:"2×12/leg",numSets:2,alt:"Split Squats"},
+    {name:"Standing Calf Raises",sets:"4×12–15",numSets:4,alt:"Seated Calf Raises"},
+    {name:"Plank",sets:"3×30–45s",numSets:3,alt:"Dead Bug 3×10/side"},
+    {name:"Cardio: Brisk Walk",sets:"15–20 min",numSets:0,cardio:true,alt:"Elliptical steady 15–20 min"},
+  ]},
+  {day:"Wednesday",focus:"Active Recovery",exercises:[
+    {name:"Brisk Walk / Cycling",sets:"30–40 min",numSets:0,cardio:true,alt:"Swimming (easy)"},
+    {name:"Mobility & Stretching",sets:"10–15 min",numSets:0,cardio:true,alt:"Yoga flow (easy)"},
+  ]},
+  {day:"Thursday",focus:"Shoulders + Chest (Light) + Cardio",exercises:[
+    {name:"Overhead Press",sets:"4×6–8",numSets:4,alt:"Machine Shoulder Press"},
+    {name:"Lateral Raises",sets:"3×12–15",numSets:3,alt:"Cable Lateral Raises"},
+    {name:"Rear Delt Fly / Face Pulls",sets:"3×12–15",numSets:3,alt:"Reverse Pec Deck"},
+    {name:"Incline DB Press (light)",sets:"2×10–12",numSets:2,alt:"Push-ups (incline)"},
+    {name:"Cardio: Intervals 30s/90s",sets:"16–20 min",numSets:0,cardio:true,alt:"Stair intervals 12–16 min"},
+  ]},
+  {day:"Friday",focus:"Back (Light) + Arms + Cardio",exercises:[
+    {name:"Chest-Supported Row",sets:"3×8–10",numSets:3,alt:"Machine Row"},
+    {name:"Lat Pulldown (light)",sets:"3×10–12",numSets:3,alt:"Straight-arm Pulldown"},
+    {name:"Superset: DB Curl + Rope Pushdown",sets:"3×10–12",numSets:3,alt:"Cable Curl + OH Triceps Ext"},
+    {name:"Cable Curls",sets:"2×12",numSets:2,alt:"Preacher Curl (machine)"},
+    {name:"Overhead Triceps Extension",sets:"2×12",numSets:2,alt:"Skullcrushers (EZ-bar)"},
+    {name:"Cardio: Elliptical",sets:"15–20 min",numSets:0,cardio:true,alt:"Incline walk 15–20 min"},
+  ]},
+  {day:"Saturday",focus:"Legs (Glutes/Hamstrings) + Core + Cardio",exercises:[
+    {name:"Hip Thrust",sets:"4×8–10",numSets:4,alt:"Glute Bridge"},
+    {name:"Romanian Deadlift",sets:"3×8–10",numSets:3,alt:"Cable Pull-through"},
+    {name:"Hamstring Curl",sets:"3×10–12",numSets:3,alt:"Stability Ball Curl"},
+    {name:"Goblet Squat",sets:"2×12",numSets:2,alt:"Leg Press (light)"},
+    {name:"Seated Calf Raises",sets:"3×12–15",numSets:3,alt:"Standing Calf Raises"},
+    {name:"Core Circuit",sets:"3 rounds",numSets:3,alt:"Pallof Press + Dead Bug"},
+    {name:"Cardio: Stairs/Incline Walk",sets:"15–20 min",numSets:0,cardio:true,alt:"Bike steady 15–20 min"},
+  ]},
+];
+
+let MEAL_PLAN = {
+  0:{label:"Sunday",preGym:{name:"Black Coffee / Fruit",cal:40,protein:1,carbs:8,fat:0},breakfast:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Sabzi + Curd",cal:120,protein:7,carbs:12,fat:4}],snack:[{name:"Nuts",cal:160,protein:5,carbs:6,fat:14},{name:"Green Tea",cal:5,protein:0,carbs:1,fat:0}],dinner:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Light Dal + Veggies",cal:130,protein:9,carbs:18,fat:2}]},
+  1:{label:"Monday",preGym:{name:"Banana (1 medium)",cal:90,protein:1,carbs:23,fat:0},breakfast:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Paneer Bhurji",cal:180,protein:14,carbs:5,fat:12}],snack:[{name:"Roasted Makhana",cal:100,protein:4,carbs:16,fat:2}],dinner:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Dal + Veggies",cal:130,protein:9,carbs:18,fat:2}]},
+  2:{label:"Tuesday",preGym:{name:"Chia Water",cal:30,protein:1,carbs:3,fat:2},breakfast:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Tofu Bhurji + Curd",cal:200,protein:16,carbs:8,fat:11}],snack:[{name:"Apple",cal:80,protein:0,carbs:21,fat:0},{name:"Peanuts (small handful)",cal:90,protein:4,carbs:3,fat:7}],dinner:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Veg Soup + Paneer",cal:170,protein:12,carbs:10,fat:8}]},
+  3:{label:"Wednesday",preGym:{name:"Black Coffee",cal:5,protein:0,carbs:0,fat:0},breakfast:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Mixed Veg + Curd",cal:130,protein:6,carbs:14,fat:4}],snack:[{name:"Apple",cal:80,protein:0,carbs:21,fat:0},{name:"Peanuts",cal:90,protein:4,carbs:3,fat:7}],dinner:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Dal Palak + Salad",cal:150,protein:10,carbs:20,fat:3}]},
+  4:{label:"Thursday",preGym:{name:"Papaya (1 cup)",cal:60,protein:1,carbs:15,fat:0},breakfast:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Besan Chilla",cal:160,protein:10,carbs:20,fat:4}],snack:[{name:"Coconut Water",cal:45,protein:0,carbs:11,fat:0},{name:"Chana (boiled)",cal:80,protein:5,carbs:13,fat:1}],dinner:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Dal Palak + Salad",cal:150,protein:10,carbs:20,fat:3}]},
+  5:{label:"Friday",preGym:{name:"Banana (1 medium)",cal:90,protein:1,carbs:23,fat:0},breakfast:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Mixed Veg + Curd",cal:130,protein:6,carbs:14,fat:4}],snack:[{name:"Fruit Chaat",cal:100,protein:1,carbs:24,fat:0}],dinner:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Veg Khichdi + Curd",cal:200,protein:8,carbs:32,fat:4}]},
+  6:{label:"Saturday",preGym:{name:"Chia Water",cal:30,protein:1,carbs:3,fat:2},breakfast:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Paneer Tikka",cal:200,protein:16,carbs:6,fat:12}],snack:[{name:"Fruit Chaat",cal:100,protein:1,carbs:24,fat:0}],dinner:[{name:"1 Roti",cal:80,protein:3,carbs:15,fat:1},{name:"Soup + Grilled Paneer",cal:190,protein:14,carbs:10,fat:10}]},
+};
+
+let MACRO_GOALS = {protein:100, carbs:200, fat:60};
+
+// ══ STATE ══
+let activeDayIdx = 0;
+let activeNutrDay = 0;
+let selectedWeek = 1;
+
+// ══ PANEL NAVIGATION ══
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  if (id === 'export') renderExport();
+}
+
+// ══ TOAST ══
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ══════════════════════
+// WORKOUTS PANEL
+// ══════════════════════
+function renderDayTabs() {
+  const tabs = document.getElementById('day-tabs');
+  tabs.innerHTML = DAYS.map((d, i) => `
+    <button class="day-tab ${i === activeDayIdx ? 'active' : ''}" onclick="selectDay(${i})">
+      ${d.day}
+    </button>
+  `).join('');
+}
+
+function selectDay(i) {
+  activeDayIdx = i;
+  renderDayTabs();
+  renderDayEditor();
+}
+
+function renderDayEditor() {
+  const day = DAYS[activeDayIdx];
+  const el = document.getElementById('day-editor');
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">${day.day}</div>
+        <div class="card-badge">${day.exercises.length} exercises</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Day Focus / Title</label>
+          <input value="${esc(day.focus)}" oninput="DAYS[${activeDayIdx}].focus=this.value;markSaved()" placeholder="e.g. Chest + Triceps + Cardio">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Exercises</div>
+      </div>
+      <div class="reorder-hint">⠿ Drag rows to reorder · Edit any field inline</div>
+      <div class="ex-list" id="ex-list" ondragover="onDragOver(event)" ondrop="onDrop(event,'ex')"></div>
+      <button class="add-row-btn" onclick="addExercise(${activeDayIdx})">＋ Add Exercise</button>
+    </div>
+  `;
+  renderExList();
+}
+
+function renderExList() {
+  const day = DAYS[activeDayIdx];
+  const list = document.getElementById('ex-list');
+  list.innerHTML = day.exercises.map((ex, ei) => `
+    <div class="ex-item" draggable="true"
+      ondragstart="onDragStart(event,'ex',${ei})"
+      ondragover="onDragOver(event)"
+      ondrop="onDrop(event,'ex',${ei})"
+      ondragend="onDragEnd()"
+      data-idx="${ei}">
+      <div class="ex-drag">⠿</div>
+      <input value="${esc(ex.name)}" placeholder="Exercise name"
+        oninput="DAYS[${activeDayIdx}].exercises[${ei}].name=this.value;markSaved()">
+      <input value="${esc(ex.sets)}" placeholder="Sets e.g. 3×10–12"
+        oninput="DAYS[${activeDayIdx}].exercises[${ei}].sets=this.value;updateNumSets(${activeDayIdx},${ei},this.value);markSaved()">
+      <input value="${esc(ex.alt||'')}" placeholder="Alternative exercise"
+        oninput="DAYS[${activeDayIdx}].exercises[${ei}].alt=this.value;markSaved()">
+      <div class="ex-actions">
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:var(--text2)">
+          <input type="checkbox" ${ex.cardio?'checked':''} onchange="DAYS[${activeDayIdx}].exercises[${ei}].cardio=this.checked;markSaved()"> Cardio
+        </label>
+        <button class="btn btn-danger btn-sm" onclick="removeExercise(${activeDayIdx},${ei})">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateNumSets(di, ei, setsStr) {
+  const match = setsStr.match(/^(\d+)/);
+  DAYS[di].exercises[ei].numSets = match ? parseInt(match[1]) : 0;
+}
+
+function addExercise(di) {
+  DAYS[di].exercises.push({name:'New Exercise',sets:'3×10–12',numSets:3,alt:''});
+  renderExList();
+  markSaved();
+  toast('Exercise added');
+}
+
+function removeExercise(di, ei) {
+  DAYS[di].exercises.splice(ei, 1);
+  renderExList();
+  markSaved();
+  toast('Exercise removed');
+}
+
+// ══════════════════════
+// DRAG & DROP
+// ══════════════════════
+let dragSrc = null;
+let dragType = null;
+
+function onDragStart(e, type, idx) {
+  dragSrc = idx;
+  dragType = type;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => e.target.style.opacity = '0.4', 0);
+}
+
+function onDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const item = e.target.closest('.ex-item');
+  if (item) item.classList.add('drag-over');
+}
+
+function onDrop(e, type, targetIdx) {
+  e.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  if (dragSrc === null || dragSrc === targetIdx) return;
+  if (type === 'ex') {
+    const arr = DAYS[activeDayIdx].exercises;
+    const [moved] = arr.splice(dragSrc, 1);
+    arr.splice(targetIdx, 0, moved);
+    renderExList();
+    markSaved();
+  }
+  dragSrc = null;
+}
+
+function onDragEnd() {
+  document.querySelectorAll('.ex-item').forEach(el => el.style.opacity = '1');
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+// ══════════════════════
+// PHASES PANEL
+// ══════════════════════
+const PHASE_COLORS = {
+  'Foundation':'#60a5fa','Build':'#c8ff00','Accumulate':'#fbbf24',
+  'Intensify':'#fb923c','Peak':'#f87171','Deload':'#a78bfa','Test':'#e879f9'
+};
+
+function renderWeekGrid() {
+  const grid = document.getElementById('week-grid');
+  grid.innerHTML = Array.from({length:12},(_,i)=>{
+    const w = i+1;
+    const pname = PHASE_NAMES[w] || '';
+    const col = PHASE_COLORS[pname] || '#8888aa';
+    return `
+      <div class="week-card ${selectedWeek===w?'selected':''}" onclick="selectWeek(${w})">
+        <div class="week-num" style="color:${col}">W${w}</div>
+        <div class="week-phase" style="color:${col}">${pname}</div>
+        <div class="week-note">${(PHASES[w]||'').substring(0,60)}${(PHASES[w]||'').length>60?'…':''}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectWeek(w) {
+  selectedWeek = w;
+  renderWeekGrid();
+  renderWeekEditor();
+}
+
+function renderWeekEditor() {
+  const w = selectedWeek;
+  const pname = PHASE_NAMES[w] || '';
+  const note = PHASES[w] || '';
+  const el = document.getElementById('week-editor');
+  el.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Week ${w} — ${pname}</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phase Name</label>
+          <select onchange="PHASE_NAMES[${w}]=this.value;renderWeekGrid();markSaved()">
+            ${['Foundation','Build','Accumulate','Intensify','Peak','Deload','Test'].map(p=>`<option ${p===pname?'selected':''}>${p}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Coaching Note</label>
+          <textarea oninput="PHASES[${w}]=this.value;renderWeekGrid();markSaved()">${esc(note)}</textarea>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ══════════════════════
+// NUTRITION PANEL
+// ══════════════════════
+function renderNutrDayTabs() {
+  const tabs = document.getElementById('nutr-day-tabs');
+  tabs.innerHTML = Object.entries(MEAL_PLAN).map(([idx, day]) => `
+    <button class="nutr-day-tab ${parseInt(idx)===activeNutrDay?'active':''}" onclick="selectNutrDay(${idx})">
+      ${day.label}
+    </button>
+  `).join('');
+}
+
+function selectNutrDay(i) {
+  activeNutrDay = parseInt(i);
+  renderNutrDayTabs();
+  renderNutrEditor();
+}
+
+function renderNutrEditor() {
+  const day = MEAL_PLAN[activeNutrDay];
+  const el = document.getElementById('nutr-editor');
+
+  const mealRow = (items, mealKey) => items.map((item, ii) => `
+    <div class="meal-item-row">
+      <input value="${esc(item.name)}" placeholder="Food name"
+        oninput="MEAL_PLAN[${activeNutrDay}].${mealKey}[${ii}].name=this.value;markSaved()">
+      <input type="number" value="${item.cal}" placeholder="Cal"
+        oninput="MEAL_PLAN[${activeNutrDay}].${mealKey}[${ii}].cal=+this.value;markSaved()">
+      <input type="number" value="${item.protein}" placeholder="Pro"
+        oninput="MEAL_PLAN[${activeNutrDay}].${mealKey}[${ii}].protein=+this.value;markSaved()">
+      <input type="number" value="${item.carbs}" placeholder="Carbs"
+        oninput="MEAL_PLAN[${activeNutrDay}].${mealKey}[${ii}].carbs=+this.value;markSaved()">
+      <input type="number" value="${item.fat}" placeholder="Fat"
+        oninput="MEAL_PLAN[${activeNutrDay}].${mealKey}[${ii}].fat=+this.value;markSaved()">
+      <button class="btn btn-danger btn-sm" onclick="removeMealItem('${mealKey}',${ii})">✕</button>
+    </div>
+  `).join('');
+
+  const preGym = day.preGym;
+
+  el.innerHTML = `
+    <div class="card">
+      <div class="meal-section">
+        <div class="meal-section-title">Pre-Gym Fuel</div>
+        <div style="display:grid;grid-template-columns:1fr 70px 70px 70px 70px;gap:8px;margin-bottom:4px">
+          <label>Name</label><label>Cal</label><label>Pro(g)</label><label>Carbs(g)</label><label>Fat(g)</label>
+        </div>
+        <div class="meal-item-row">
+          <input value="${esc(preGym.name)}" oninput="MEAL_PLAN[${activeNutrDay}].preGym.name=this.value;markSaved()">
+          <input type="number" value="${preGym.cal}" oninput="MEAL_PLAN[${activeNutrDay}].preGym.cal=+this.value;markSaved()">
+          <input type="number" value="${preGym.protein}" oninput="MEAL_PLAN[${activeNutrDay}].preGym.protein=+this.value;markSaved()">
+          <input type="number" value="${preGym.carbs}" oninput="MEAL_PLAN[${activeNutrDay}].preGym.carbs=+this.value;markSaved()">
+          <input type="number" value="${preGym.fat}" oninput="MEAL_PLAN[${activeNutrDay}].preGym.fat=+this.value;markSaved()">
+          <div></div>
+        </div>
+      </div>
+
+      <div class="meal-section">
+        <div class="meal-section-title">Breakfast</div>
+        <div style="display:grid;grid-template-columns:1fr 70px 70px 70px 70px auto;gap:8px;margin-bottom:4px">
+          <label>Name</label><label>Cal</label><label>Pro(g)</label><label>Carbs(g)</label><label>Fat(g)</label><div></div>
+        </div>
+        ${mealRow(day.breakfast, 'breakfast')}
+        <button class="add-row-btn" onclick="addMealItem('breakfast')">＋ Add breakfast item</button>
+      </div>
+
+      <div class="meal-section">
+        <div class="meal-section-title">Snacks</div>
+        <div style="display:grid;grid-template-columns:1fr 70px 70px 70px 70px auto;gap:8px;margin-bottom:4px">
+          <label>Name</label><label>Cal</label><label>Pro(g)</label><label>Carbs(g)</label><label>Fat(g)</label><div></div>
+        </div>
+        ${mealRow(day.snack, 'snack')}
+        <button class="add-row-btn" onclick="addMealItem('snack')">＋ Add snack item</button>
+      </div>
+
+      <div class="meal-section">
+        <div class="meal-section-title">Dinner</div>
+        <div style="display:grid;grid-template-columns:1fr 70px 70px 70px 70px auto;gap:8px;margin-bottom:4px">
+          <label>Name</label><label>Cal</label><label>Pro(g)</label><label>Carbs(g)</label><label>Fat(g)</label><div></div>
+        </div>
+        ${mealRow(day.dinner, 'dinner')}
+        <button class="add-row-btn" onclick="addMealItem('dinner')">＋ Add dinner item</button>
+      </div>
+    </div>
+  `;
+}
+
+function addMealItem(mealKey) {
+  MEAL_PLAN[activeNutrDay][mealKey].push({name:'New Item',cal:0,protein:0,carbs:0,fat:0});
+  renderNutrEditor();
+  markSaved();
+}
+
+function removeMealItem(mealKey, ii) {
+  MEAL_PLAN[activeNutrDay][mealKey].splice(ii, 1);
+  renderNutrEditor();
+  markSaved();
+}
+
+// ══════════════════════
+// MACROS PANEL
+// ══════════════════════
+function renderMacroGoals() {
+  const el = document.getElementById('macro-goals-row');
+  el.innerHTML = [
+    {key:'protein',label:'Protein',unit:'g',color:'#34d399'},
+    {key:'carbs',label:'Carbs',unit:'g',color:'#60a5fa'},
+    {key:'fat',label:'Fat',unit:'g',color:'#fbbf24'},
+  ].map(m => `
+    <div class="macro-goal-card">
+      <div class="macro-goal-label" style="color:${m.color}">${m.label}</div>
+      <input type="number" value="${MACRO_GOALS[m.key]}"
+        style="text-align:center;font-size:28px;font-family:var(--font-display);letter-spacing:1px;border:none;background:transparent;color:${m.color}"
+        oninput="MACRO_GOALS['${m.key}']=+this.value;markSaved()">
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">${m.unit} / day</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════
+// EXPORT
+// ══════════════════════
+function buildDataJS() {
+  const j = (v) => JSON.stringify(v, null, 2);
+  return `/* ═══════════════════════════════════════════════════
+   12-Week Gym Plan — Static Data
+   Generated by Admin Panel — ${new Date().toLocaleString()}
+   ═══════════════════════════════════════════════════ */
+
+"use strict";
+
+const PHASES = ${j(PHASES)};
+
+const PHASE_NAMES = ${j(PHASE_NAMES)};
+
+const PHASE_CLS = [
+  "",
+  "phase-foundation","phase-foundation",
+  "phase-build","phase-build",
+  "phase-accumulate","phase-accumulate",
+  "phase-intensify","phase-intensify",
+  "phase-peak","phase-peak",
+  "phase-deload","phase-test",
+];
+
+const DAY_ICONS = ["💪","🏋️","🦵","🚶","🏔️","💪","🍑"];
+
+const DAYS = ${j(DAYS)};
+
+const MUSCLE_MAP = {
+  "Flat Press (BB/Machine)":"Chest","Incline DB Press":"Chest","Cable/DB Flyes":"Chest",
+  "Close-Grip Press / Assisted Dips":"Triceps","Rope Triceps Pushdown":"Triceps",
+  "Lat Pulldown / Assisted Pull-ups":"Back","Seated Cable Row":"Back","One-arm DB Row":"Back",
+  "EZ-Bar/DB Curl":"Biceps","Hammer Curl":"Biceps",
+  "Squat OR Leg Press":"Legs","Bulgarian Split Squat":"Legs","Leg Extension":"Legs",
+  "Walking Lunges":"Legs","Standing Calf Raises":"Calves","Plank":"Core",
+  "Overhead Press":"Shoulders","Lateral Raises":"Shoulders","Rear Delt Fly / Face Pulls":"Shoulders",
+  "Incline DB Press (light)":"Chest","Chest-Supported Row":"Back","Lat Pulldown (light)":"Back",
+  "Superset: DB Curl + Rope Pushdown":"Biceps/Triceps","Cable Curls":"Biceps",
+  "Overhead Triceps Extension":"Triceps","Hip Thrust":"Glutes","Romanian Deadlift":"Hamstrings",
+  "Hamstring Curl":"Hamstrings","Goblet Squat":"Legs","Seated Calf Raises":"Calves","Core Circuit":"Core",
+};
+
+const PR_LIFTS = [
+  "Back Squat","Bench Press","Deadlift","Pull-ups / Weighted","Overhead Press","Hip Thrust",
+];
+
+const TOTAL_PER_WEEK = DAYS.reduce((s,d) => s + d.exercises.length, 0);
+const TOTAL_ALL = TOTAL_PER_WEEK * 12;
+
+/* ── 7-DAY NUTRITION PLAN ── */
+const MEAL_PLAN = ${j(MEAL_PLAN)};
+
+const MACRO_GOALS = ${j(MACRO_GOALS)};
+
+/* ── WARMUP DATA ── */
+const WARMUP_DATA = {
+  Chest:{icon:'💪',color:'#60a5fa',exercises:[{name:'Arm Circles',sets:'2 × 20 reps each direction',tip:'Keep arms straight, full range of motion'},{name:'Chest Opener Stretch',sets:'3 × 20s hold',tip:'Clasp hands behind back, open chest forward'},{name:'Wall Push-up',sets:'2 × 15 reps',tip:'Slow and controlled — feel the pec stretch'},{name:'Band Pull-Apart',sets:'2 × 15 reps',tip:'Pull to chest height, squeeze shoulder blades'},{name:'Light DB Fly (no weight)',sets:'2 × 12 reps',tip:'Focus on full stretch at bottom'},{name:'Doorway Stretch',sets:'2 × 30s each side',tip:'Elbows at 90°, lean gently forward'}]},
+  Back:{icon:'🏋️',color:'#a78bfa',exercises:[{name:'Cat-Cow',sets:'2 × 10 slow reps',tip:'Breathe in on arch, out on round'},{name:'Band Face Pull',sets:'2 × 15 reps',tip:'Pull to forehead, external rotate at top'},{name:'Dead Hang',sets:'3 × 20–30s',tip:'Relax shoulders fully, decompress spine'},{name:'Scapular Pull-ups',sets:'2 × 10 reps',tip:'Depress scapula without bending elbows'},{name:'Single-arm Cable Row (light)',sets:'2 × 12 reps',tip:'Feel the lat engage at full stretch'},{name:"Child's Pose",sets:'2 × 30s',tip:'Arms extended, feel thoracic stretch'}]},
+  Shoulders:{icon:'🏔️',color:'#fbbf24',exercises:[{name:'Neck Rolls',sets:'2 × 10 reps each side',tip:'Slow and gentle, never force range'},{name:'Shoulder Rolls',sets:'2 × 15 reps',tip:'Big circles, forward and backward'},{name:'Cross-body Stretch',sets:'3 × 20s each side',tip:'Pull arm across, keep shoulder down'},{name:'Lateral Raise (no weight)',sets:'2 × 15 reps',tip:'Slow 3s up, 3s down tempo'},{name:'Face Pull (band/cable, light)',sets:'2 × 15 reps',tip:'Targets rear delts and rotator cuff'},{name:'YTW Raises (prone)',sets:'2 × 8 reps each letter',tip:'No weight, focus on scapula movement'}]},
+  Legs:{icon:'🦵',color:'#c8ff00',exercises:[{name:'Leg Swings (forward/back)',sets:'2 × 15 reps each leg',tip:'Hold wall for balance, full hip range'},{name:'Leg Swings (side to side)',sets:'2 × 15 reps each leg',tip:'Open hip rotators gently'},{name:'Bodyweight Squat',sets:'2 × 15 reps',tip:'Slow descent, knees track over toes'},{name:'Hip Circles',sets:'2 × 10 reps each direction',tip:'Hands on hips, big circular motion'},{name:'Walking Lunge',sets:'2 × 10 reps each leg',tip:'Upright torso, full knee flexion'},{name:'Couch Stretch',sets:'2 × 30s each side',tip:'Quad + hip flexor stretch'}]},
+  Hamstrings:{icon:'🍑',color:'#fb923c',exercises:[{name:'Standing Hamstring Stretch',sets:'3 × 30s each leg',tip:'Hinge at hip, keep back flat'},{name:'Lying Hamstring Stretch',sets:'2 × 30s each leg',tip:'Use band or towel for assistance'},{name:'Good Morning (empty bar/BW)',sets:'2 × 12 reps',tip:'Hinge not squat — feel the stretch'},{name:'Nordic Curl Negative',sets:'2 × 5 reps',tip:'Slow 4s descent only, use hands to return'},{name:'Inchworm',sets:'2 × 8 reps',tip:'Walk hands out to plank, walk feet back'}]},
+  Glutes:{icon:'🔥',color:'#e879f9',exercises:[{name:'Glute Bridge',sets:'2 × 15 reps',tip:'Drive hips up, squeeze hard at top'},{name:'Clamshell (band)',sets:'2 × 15 reps each side',tip:'Keep hips stacked, small controlled movement'},{name:'Hip Circle (quadruped)',sets:'2 × 10 reps each leg',tip:'On hands and knees, big hip circles'},{name:'Donkey Kick',sets:'2 × 12 reps each side',tip:'Flex glute at top, avoid lower back arch'},{name:'Pigeon Pose',sets:'2 × 30s each side',tip:'Deep hip external rotation stretch'}]},
+  Arms:{icon:'💪',color:'#34d399',exercises:[{name:'Wrist Circles',sets:'2 × 15 reps each direction',tip:'Important for pressing movements'},{name:'Bicep Stretch (wall)',sets:'2 × 20s each arm',tip:'Palm on wall, rotate away slowly'},{name:'Tricep Overhead Stretch',sets:'2 × 20s each arm',tip:'Pull elbow behind head gently'},{name:'Light Band Curl',sets:'2 × 15 reps',tip:'Pump blood into the muscle, no ego'},{name:'Light Band Pushdown',sets:'2 × 15 reps',tip:'Full extension at bottom, slow return'}]},
+  Core:{icon:'⚡',color:'#4ade80',exercises:[{name:'Dead Bug',sets:'2 × 8 reps each side',tip:'Lower back pressed to floor throughout'},{name:'Bird Dog',sets:'2 × 8 reps each side',tip:'Opposite arm and leg, hold 2s at top'},{name:'Cat-Cow',sets:'2 × 10 slow reps',tip:"Breathe out on round, in on arch"},{name:'Plank',sets:'2 × 20s',tip:'Squeeze glutes and abs, neutral spine'},{name:'Side Plank',sets:'1 × 20s each side',tip:'Stack feet or stagger for easier version'},{name:'Pelvic Tilt',sets:'2 × 15 reps',tip:'Lying on back, flatten lumbar curve'}]},
+};
+
+/* ── HIIT PROGRAMS ── */
+const HIIT_PROGRAMS = [
+  {id:'fat-loss',name:'Fat Loss',icon:'🔥',color:'#ff7043',tagline:'Burn calories, torch fat',description:'High-intensity intervals maximising calorie burn and EPOC (afterburn effect). Keep rest short to stay in the fat-burning zone.',workSecs:40,restSecs:20,rounds:8,exercises:[{name:'Jump Squats',tip:'Land soft, full depth each rep'},{name:'Burpees',tip:'Chest to floor, explosive jump'},{name:'Mountain Climbers',tip:'Fast feet, hips level'},{name:'High Knees',tip:'Pump arms, drive knees to chest'},{name:'Jumping Lunges',tip:'Switch legs mid-air, land controlled'},{name:'Skater Hops',tip:'Side to side, touch the floor'},{name:'Push-up to T-Rotation',tip:'Full push-up then rotate to side plank'},{name:'Sprint in Place',tip:'Fastest feet you can, full 40 seconds'}]},
+  {id:'muscle-conditioning',name:'Muscle Conditioning',icon:'💪',color:'#a78bfa',tagline:'Build strength endurance',description:'Compound moves under time pressure. Builds muscular endurance and metabolic conditioning simultaneously.',workSecs:45,restSecs:15,rounds:6,exercises:[{name:'Push-ups',tip:'Full range — chest to floor, lockout top'},{name:'Squat to Press (DB)',tip:'Squat deep, press overhead at top'},{name:'Renegade Row (DB)',tip:'Plank position, row each arm alternating'},{name:'Reverse Lunge + Knee Drive',tip:'Lunge back, drive knee up on return'},{name:'Dip (chair/bench)',tip:'Lower until upper arm parallel, full lockout'},{name:'Plank Shoulder Taps',tip:'Hips still, tap shoulder with opposite hand'}]},
+  {id:'cardio-endurance',name:'Cardio Endurance',icon:'🏃',color:'#60a5fa',tagline:'Build your aerobic engine',description:'Longer work intervals with moderate rest. Builds VO2 max and cardiovascular capacity over time.',workSecs:60,restSecs:30,rounds:5,exercises:[{name:'Jogging in Place',tip:'Moderate pace, breathe rhythmically'},{name:'Step-ups (alternate legs)',tip:'Use a sturdy chair or bench'},{name:'Jumping Jacks',tip:'Full range, maintain steady pace'},{name:'Low-impact Box Step',tip:'Step up-up-down-down pattern'},{name:'Standing Bicycle',tip:'Elbow to opposite knee, controlled pace'}]},
+  {id:'beginner',name:'Beginner Friendly',icon:'🌱',color:'#34d399',tagline:'Start your HIIT journey',description:'Longer rest, lower intensity. Perfect for building the habit and learning proper form before increasing intensity.',workSecs:30,restSecs:30,rounds:5,exercises:[{name:'March in Place',tip:'Lift knees to hip height, pump arms'},{name:'Wall Push-up',tip:'Hands on wall, controlled push'},{name:'Bodyweight Squat',tip:'Slow down, pause at bottom'},{name:'Seated Leg Raise',tip:'Sit on edge of chair, raise both legs'},{name:'Standing Side Crunch',tip:'Hands behind head, elbow to hip'}]},
+  {id:'advanced',name:'Advanced',icon:'⚡',color:'#fbbf24',tagline:'Maximum intensity protocol',description:'Tabata-inspired extreme effort. 20 seconds all-out, minimal rest. Only for well-conditioned athletes.',workSecs:20,restSecs:10,rounds:12,exercises:[{name:'Burpee Box Jump',tip:'Burpee then explode onto box'},{name:'Tuck Jumps',tip:'Knees to chest, land soft'},{name:'Clap Push-ups',tip:'Explosive push — hands leave floor'},{name:'Pistol Squat (each side)',tip:'One-leg squat, arms forward for balance'},{name:'Plyo Lunge (fast switch)',tip:'Alternate lunges, no rest between'},{name:'Hollow Body Rock',tip:'Arms and legs 6" off floor, rock on spine'},{name:'V-ups',tip:'Hands and feet meet in middle, full range'},{name:'Sprawls',tip:'Like a burpee but no push-up, focus on speed'}]},
+];
+
+/* ── EXERCISE IMAGE MAP ── */
+const EX_IMAGES = {
+  'Flat Press (BB/Machine)':'https://v2.exercisedb.io/image/cFjmkRMtHHD0ON','Incline DB Press':'https://v2.exercisedb.io/image/A7McZBxSm0S1LF','Cable/DB Flyes':'https://v2.exercisedb.io/image/S4DY-ySKcbmTPT','Close-Grip Press / Assisted Dips':'https://v2.exercisedb.io/image/yMfMCC9pqGevLQ','Rope Triceps Pushdown':'https://v2.exercisedb.io/image/5Nn0NFZaTSDc5p','Lat Pulldown / Assisted Pull-ups':'https://v2.exercisedb.io/image/GMLMKsIX2KmVMH','Seated Cable Row':'https://v2.exercisedb.io/image/yO7OyJLlVRzWrY','One-arm DB Row':'https://v2.exercisedb.io/image/6Rx3RTPdYFNuAr','EZ-Bar/DB Curl':'https://v2.exercisedb.io/image/iVvbFpcMmxhBpS','Hammer Curl':'https://v2.exercisedb.io/image/WZgmXGJvbT5MWs','Squat OR Leg Press':'https://v2.exercisedb.io/image/yYpyO7MpnQdxYN','Bulgarian Split Squat':'https://v2.exercisedb.io/image/9QgODzDwPJl5qK','Leg Extension':'https://v2.exercisedb.io/image/JKJ5bOfE7oFOKd','Walking Lunges':'https://v2.exercisedb.io/image/y2LRMB2dpBTgH0','Standing Calf Raises':'https://v2.exercisedb.io/image/gp9PZNQpVPLBKL','Plank':'https://v2.exercisedb.io/image/fvwHnBBPf7BDW1','Overhead Press':'https://v2.exercisedb.io/image/ypEPFvhAe-mDKb','Lateral Raises':'https://v2.exercisedb.io/image/7yRbQd5Ud8ULDL','Rear Delt Fly / Face Pulls':'https://v2.exercisedb.io/image/4a16oT4VZWQ7zQ','Incline DB Press (light)':'https://v2.exercisedb.io/image/A7McZBxSm0S1LF','Chest-Supported Row':'https://v2.exercisedb.io/image/PLt7KxZmJNmGKR','Lat Pulldown (light)':'https://v2.exercisedb.io/image/GMLMKsIX2KmVMH','Superset: DB Curl + Rope Pushdown':'https://v2.exercisedb.io/image/iVvbFpcMmxhBpS','Cable Curls':'https://v2.exercisedb.io/image/iVvbFpcMmxhBpS','Overhead Triceps Extension':'https://v2.exercisedb.io/image/5Nn0NFZaTSDc5p','Hip Thrust':'https://v2.exercisedb.io/image/QHdH-k5qVsBLrX','Romanian Deadlift':'https://v2.exercisedb.io/image/kCO3g3OcnuV0n1','Hamstring Curl':'https://v2.exercisedb.io/image/L1ETSBt17Gs4l2','Goblet Squat':'https://v2.exercisedb.io/image/4VKZiGpDaThivZ','Seated Calf Raises':'https://v2.exercisedb.io/image/gp9PZNQpVPLBKL','Core Circuit':'https://v2.exercisedb.io/image/fvwHnBBPf7BDW1','Cardio: Incline Walk':'https://v2.exercisedb.io/image/7vZRlCRpZuHfYb','Cardio: Bike Intervals':'https://v2.exercisedb.io/image/7vZRlCRpZuHfYb','Cardio: Brisk Walk':'https://v2.exercisedb.io/image/7vZRlCRpZuHfYb','Brisk Walk / Cycling':'https://v2.exercisedb.io/image/7vZRlCRpZuHfYb','Mobility & Stretching':'https://v2.exercisedb.io/image/fvwHnBBPf7BDW1','Cardio: Intervals 30s/90s':'https://v2.exercisedb.io/image/bQqVJfCLBB-Jqd','Cardio: Elliptical':'https://v2.exercisedb.io/image/7vZRlCRpZuHfYb','Cardio: Stairs/Incline Walk':'https://v2.exercisedb.io/image/7vZRlCRpZuHfYb',
+};
+
+const MUSCLE_COLORS = {
+  Legs:"#c8ff00",Chest:"#60a5fa",Back:"#a78bfa",Shoulders:"#fbbf24",Biceps:"#34d399",
+  Triceps:"#f87171",Hamstrings:"#fb923c",Glutes:"#e879f9",Calves:"#67e8f9",Core:"#4ade80",
+  "Biceps/Triceps":"#f472b6",Other:"#94a3b8",
+};
+`;
+}
+
+function renderExport() {
+  document.getElementById('export-preview').textContent = buildDataJS().substring(0, 3000) + '\n\n... [truncated for preview — full file on export]';
+}
+
+function exportDataJS() {
+  const content = buildDataJS();
+  const blob = new Blob([content], {type: 'text/javascript'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'data.js';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ data.js downloaded!');
+}
+
+function markSaved() {
+  document.getElementById('status-text').textContent = 'Changes saved · Export to deploy';
+}
+
+function esc(s) {
+  return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ══ INIT ══
+renderDayTabs();
+renderDayEditor();
+renderWeekGrid();
+selectWeek(1);
+renderNutrDayTabs();
+renderNutrEditor();
+renderMacroGoals();
+</script>
+</body>
+</html>
