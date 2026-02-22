@@ -223,7 +223,10 @@ function requestNotifications() {
 function renderTodayBanner() {
   const wrap = document.getElementById('today-banner-wrap');
   if (!wrap) return;
-  const todayIdx = new Date().getDay();
+  // DAYS array: Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+  // JS getDay(): Sun=0, Mon=1, ..., Sat=6
+  const jsDow    = new Date().getDay();
+  const todayIdx = jsDow === 0 ? 6 : jsDow - 1;
   const dayData  = DAYS[todayIdx];
   let suggestWeek = 1;
   for (let w = 1; w <= 12; w++) { if (!getWeekProgress(w).complete) { suggestWeek = w; break; } }
@@ -935,7 +938,9 @@ window.addEventListener('popstate', () => {
 });
 
 /* ── NUTRITION ── */
-let nutrDay = new Date().getDay();
+// MEAL_PLAN uses Mon=0...Sun=6; JS getDay() returns Sun=0,Mon=1,...,Sat=6
+const _jsDow = new Date().getDay();
+let nutrDay = _jsDow === 0 ? 6 : _jsDow - 1;
 
 function getNutrKey(day)  { return `nutr_eaten_${day}_${new Date().toDateString()}`; }
 function getWaterKey()    { return `nutr_water_${new Date().toDateString()}`; }
@@ -976,21 +981,27 @@ function setCalGoal() {
 function computeDayNutr(day) {
   const plan = MEAL_PLAN[day];
   let cal = 0, protein = 0, carbs = 0, fat = 0;
+  function applyOvr(mealKey, itemIdx, item) {
+    const ovr = lsj(`ncex_d${day}_m${mealKey}_i${itemIdx}`);
+    return ovr || item;
+  }
   const qPre = getNutrQty(day, 'preGym');
   if (qPre > 0) {
-    cal     += plan.preGym.cal     * qPre;
-    protein += plan.preGym.protein * qPre;
-    carbs   += plan.preGym.carbs   * qPre;
-    fat     += plan.preGym.fat     * qPre;
+    const pre = applyOvr('preGym', 0, plan.preGym);
+    cal     += pre.cal     * qPre;
+    protein += pre.protein * qPre;
+    carbs   += pre.carbs   * qPre;
+    fat     += pre.fat     * qPre;
   }
   ['breakfast', 'snack', 'dinner'].forEach(meal => {
     (plan[meal] || []).forEach((item, i) => {
       const q = getNutrQty(day, meal + '_' + i);
       if (q > 0) {
-        cal     += item.cal     * q;
-        protein += item.protein * q;
-        carbs   += item.carbs   * q;
-        fat     += item.fat     * q;
+        const it = applyOvr(meal, i, item);
+        cal     += it.cal     * q;
+        protein += it.protein * q;
+        carbs   += it.carbs   * q;
+        fat     += it.fat     * q;
       }
     });
   });
@@ -1072,7 +1083,7 @@ function renderNutrPage() {
   // Day tabs
   const tabs = document.getElementById('nutr-day-tabs');
   tabs.innerHTML = '';
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((lbl, i) => {
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach((lbl, i) => {
     const b = document.createElement('button');
     b.className   = 'nutr-day-tab' + (i === nutrDay ? ' active' : '');
     b.textContent = lbl;
@@ -1083,11 +1094,16 @@ function renderNutrPage() {
   // Meals
   const mealsEl = document.getElementById('nutr-meals');
   mealsEl.innerHTML = '';
+  // Apply any custom overrides from the Nutrition Customize tab
+  function applyNutrOvr(dayIdx, mealKey, itemIdx, item) {
+    const ovr = lsj(`ncex_d${dayIdx}_m${mealKey}_i${itemIdx}`);
+    return ovr ? ovr : item;
+  }
   const MEAL_SECTIONS = [
-    { key: 'preGym',     icon: '☕',  label: 'Pre-Gym',   items: [plan.preGym]   },
-    { key: 'breakfast',  icon: '🍽️', label: 'Breakfast', items: plan.breakfast  },
-    { key: 'snack',      icon: '🍎',  label: 'Snack',     items: plan.snack      },
-    { key: 'dinner',     icon: '🌙',  label: 'Dinner',    items: plan.dinner     },
+    { key: 'preGym',     icon: '☕',  label: 'Pre-Gym',   items: [applyNutrOvr(nutrDay, 'preGym', 0, plan.preGym)]   },
+    { key: 'breakfast',  icon: '🍽️', label: 'Breakfast', items: (plan.breakfast||[]).map((it,i)=>applyNutrOvr(nutrDay,'breakfast',i,it))  },
+    { key: 'snack',      icon: '🍎',  label: 'Snack',     items: (plan.snack||[]).map((it,i)=>applyNutrOvr(nutrDay,'snack',i,it))      },
+    { key: 'dinner',     icon: '🌙',  label: 'Dinner',    items: (plan.dinner||[]).map((it,i)=>applyNutrOvr(nutrDay,'dinner',i,it))     },
   ];
 
   MEAL_SECTIONS.forEach(sec => {
@@ -1540,8 +1556,24 @@ function renderNotifSettings() {
 
 /* ── CUSTOMIZE PAGE ── */
 let customizeEditState = null; // { dayIdx, exIdx, week }
+let customizeActiveTab = 'workout'; // 'workout' | 'nutrition'
+
+function switchCustomizeTab(tab) {
+  customizeActiveTab = tab;
+  document.getElementById('cust-tab-workout').classList.toggle('active', tab === 'workout');
+  document.getElementById('cust-tab-nutrition').classList.toggle('active', tab === 'nutrition');
+  document.getElementById('customize-body').style.display = tab === 'workout' ? '' : 'none';
+  document.getElementById('customize-nutr-body').style.display = tab === 'nutrition' ? '' : 'none';
+  if (tab === 'nutrition') renderNutrCustomizePage();
+}
 
 function renderCustomizePage() {
+  // Ensure workout tab is visible and nutrition is hidden on load
+  document.getElementById('customize-body').style.display = customizeActiveTab === 'workout' ? '' : 'none';
+  document.getElementById('customize-nutr-body').style.display = customizeActiveTab === 'nutrition' ? '' : 'none';
+  document.getElementById('cust-tab-workout').classList.toggle('active', customizeActiveTab === 'workout');
+  document.getElementById('cust-tab-nutrition').classList.toggle('active', customizeActiveTab === 'nutrition');
+
   const wrap = document.getElementById('customize-body');
   if (!wrap) return;
   let html = '';
@@ -1674,6 +1706,122 @@ function resetCustomizeModal() {
 function closeCustomizeModal() {
   document.getElementById('cust-modal').classList.remove('open');
   customizeEditState = null;
+}
+
+/* ── NUTRITION CUSTOMIZE PAGE ── */
+let nutrCustEditState = null; // { dayIdx, mealKey, itemIdx }
+const MEAL_ICONS = { preGym: '☕', breakfast: '🍽️', snack: '🍎', dinner: '🌙' };
+const MEAL_LABELS = { preGym: 'Pre-Gym', breakfast: 'Breakfast', snack: 'Snack', dinner: 'Dinner' };
+const DAY_NAMES_MON = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DAY_ICONS_NUTR = ['🏋️','🦵','🚶','🏔️','💪','🍑','💪'];
+
+function getNutrCustomKey(dayIdx, mealKey, itemIdx) { return `ncex_d${dayIdx}_m${mealKey}_i${itemIdx}`; }
+function getNutrCustomItem(dayIdx, mealKey, itemIdx) { return lsj(getNutrCustomKey(dayIdx, mealKey, itemIdx)); }
+
+function renderNutrCustomizePage() {
+  const wrap = document.getElementById('customize-nutr-body');
+  if (!wrap) return;
+  let html = '';
+  for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+    const plan = MEAL_PLAN[dayIdx];
+    html += `<div class="nutr-cust-day-block">
+      <div class="nutr-cust-day-hd">
+        <span class="nutr-cust-day-icon">${DAY_ICONS_NUTR[dayIdx]}</span>
+        <div>
+          <div class="nutr-cust-day-name">${DAY_NAMES_MON[dayIdx]}</div>
+          <div class="nutr-cust-day-focus">${plan.label || ''}</div>
+        </div>
+      </div>`;
+    // preGym (single item)
+    const preOvr = getNutrCustomItem(dayIdx, 'preGym', 0);
+    const preItem = preOvr || plan.preGym;
+    html += `<div class="nutr-cust-section-lbl">${MEAL_ICONS.preGym} Pre-Gym</div>
+      <div class="nutr-cust-item-row ${preOvr ? 'has-custom' : ''}">
+        <div class="nutr-cust-item-info">
+          <div class="nutr-cust-item-name">${esc(preItem.name)}</div>
+          <div class="nutr-cust-item-macros">${preItem.cal} kcal · P:${preItem.protein}g C:${preItem.carbs}g F:${preItem.fat}g</div>
+          ${preOvr ? '<span class="nutr-cust-badge">✏️ Customized</span>' : ''}
+        </div>
+        <button class="nutr-cust-edit-btn" onclick="openNutrCustomizeModal(${dayIdx},'preGym',0)">Edit</button>
+      </div>`;
+    // multi-item meals
+    ['breakfast','snack','dinner'].forEach(mealKey => {
+      const items = plan[mealKey] || [];
+      if (!items.length) return;
+      html += `<div class="nutr-cust-section-lbl">${MEAL_ICONS[mealKey]} ${MEAL_LABELS[mealKey]}</div>`;
+      items.forEach((item, itemIdx) => {
+        const ovr = getNutrCustomItem(dayIdx, mealKey, itemIdx);
+        const disp = ovr || item;
+        html += `<div class="nutr-cust-item-row ${ovr ? 'has-custom' : ''}">
+          <div class="nutr-cust-item-info">
+            <div class="nutr-cust-item-name">${esc(disp.name)}</div>
+            <div class="nutr-cust-item-macros">${disp.cal} kcal · P:${disp.protein}g C:${disp.carbs}g F:${disp.fat}g</div>
+            ${ovr ? '<span class="nutr-cust-badge">✏️ Customized</span>' : ''}
+          </div>
+          <button class="nutr-cust-edit-btn" onclick="openNutrCustomizeModal(${dayIdx},'${mealKey}',${itemIdx})">Edit</button>
+        </div>`;
+      });
+    });
+    html += `</div>`;
+  }
+  wrap.innerHTML = html;
+}
+
+function openNutrCustomizeModal(dayIdx, mealKey, itemIdx) {
+  nutrCustEditState = { dayIdx, mealKey, itemIdx };
+  const plan = MEAL_PLAN[dayIdx];
+  const origItem = mealKey === 'preGym' ? plan.preGym : plan[mealKey][itemIdx];
+  const ovr = getNutrCustomItem(dayIdx, mealKey, itemIdx);
+  const item = ovr || origItem;
+
+  document.getElementById('nutr-cust-modal-title').textContent = `Edit: ${origItem.name}`;
+  document.getElementById('nutr-cust-modal-day').textContent = `${DAY_NAMES_MON[dayIdx]} · ${MEAL_LABELS[mealKey]}`;
+  document.getElementById('nutr-cust-name-inp').value    = item.name;
+  document.getElementById('nutr-cust-cal-inp').value     = item.cal;
+  document.getElementById('nutr-cust-protein-inp').value = item.protein;
+  document.getElementById('nutr-cust-carbs-inp').value   = item.carbs;
+  document.getElementById('nutr-cust-fat-inp').value     = item.fat;
+  document.getElementById('nutr-cust-modal').classList.add('open');
+}
+
+function saveNutrCustomizeModal() {
+  if (!nutrCustEditState) return;
+  const { dayIdx, mealKey, itemIdx } = nutrCustEditState;
+  const name    = document.getElementById('nutr-cust-name-inp').value.trim();
+  const cal     = parseFloat(document.getElementById('nutr-cust-cal-inp').value) || 0;
+  const protein = parseFloat(document.getElementById('nutr-cust-protein-inp').value) || 0;
+  const carbs   = parseFloat(document.getElementById('nutr-cust-carbs-inp').value) || 0;
+  const fat     = parseFloat(document.getElementById('nutr-cust-fat-inp').value) || 0;
+  if (!name) {
+    document.getElementById('nutr-cust-name-inp').style.borderColor = 'rgba(248,113,113,0.5)';
+    setTimeout(() => document.getElementById('nutr-cust-name-inp').style.borderColor = '', 1200);
+    return;
+  }
+  lssj(getNutrCustomKey(dayIdx, mealKey, itemIdx), { name, cal, protein, carbs, fat });
+  showToast('🥗', 'Nutrition item updated!');
+  closeNutrCustomizeModal();
+  renderNutrCustomizePage();
+}
+
+function resetNutrCustomizeModal() {
+  if (!nutrCustEditState) return;
+  const { dayIdx, mealKey, itemIdx } = nutrCustEditState;
+  localStorage.removeItem(getNutrCustomKey(dayIdx, mealKey, itemIdx));
+  const plan = MEAL_PLAN[dayIdx];
+  const origItem = mealKey === 'preGym' ? plan.preGym : plan[mealKey][itemIdx];
+  document.getElementById('nutr-cust-name-inp').value    = origItem.name;
+  document.getElementById('nutr-cust-cal-inp').value     = origItem.cal;
+  document.getElementById('nutr-cust-protein-inp').value = origItem.protein;
+  document.getElementById('nutr-cust-carbs-inp').value   = origItem.carbs;
+  document.getElementById('nutr-cust-fat-inp').value     = origItem.fat;
+  showToast('🔄', 'Reset to original');
+  closeNutrCustomizeModal();
+  renderNutrCustomizePage();
+}
+
+function closeNutrCustomizeModal() {
+  document.getElementById('nutr-cust-modal').classList.remove('open');
+  nutrCustEditState = null;
 }
 
 /* ── INIT ── */

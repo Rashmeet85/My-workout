@@ -358,9 +358,14 @@
   <div class="cust-wrap">
     <div class="cust-header">
       <h2>⚙️ CUSTOMIZE</h2>
-      <p>Edit exercises for a specific day & week, or apply changes across all 12 weeks.</p>
+      <p>Edit exercises or meal plans for any day, applied globally or per-week.</p>
+    </div>
+    <div class="cust-tabs-row">
+      <button class="cust-tab-btn active" id="cust-tab-workout" onclick="switchCustomizeTab('workout')">💪 Workout</button>
+      <button class="cust-tab-btn" id="cust-tab-nutrition" onclick="switchCustomizeTab('nutrition')">🥗 Nutrition</button>
     </div>
     <div id="customize-body"></div>
+    <div id="customize-nutr-body" style="display:none"></div>
   </div>
 </div>
 
@@ -395,6 +400,45 @@
     <div class="cust-modal-footer">
       <button class="cust-reset-btn" onclick="resetCustomizeModal()">🔄 Reset to Original</button>
       <button class="cust-save-btn" onclick="saveCustomizeModal()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NUTRITION CUSTOMIZE MODAL ── -->
+<div class="cust-modal-overlay" id="nutr-cust-modal" onclick="if(event.target===this)closeNutrCustomizeModal()">
+  <div class="cust-modal-box">
+    <div class="cust-modal-hd">
+      <div>
+        <div class="cust-modal-title" id="nutr-cust-modal-title">Edit Meal Item</div>
+        <div class="cust-modal-day" id="nutr-cust-modal-day"></div>
+      </div>
+      <button class="cust-modal-close" onclick="closeNutrCustomizeModal()">✕</button>
+    </div>
+    <div class="cust-modal-body">
+      <div class="cust-field">
+        <label class="cust-field-lbl">Item Name</label>
+        <input class="cust-inp" id="nutr-cust-name-inp" type="text" placeholder="e.g. 2 Rotis">
+      </div>
+      <div class="cust-field">
+        <label class="cust-field-lbl">Calories (kcal)</label>
+        <input class="cust-inp" id="nutr-cust-cal-inp" type="number" min="0" max="9999" placeholder="e.g. 160">
+      </div>
+      <div class="cust-field">
+        <label class="cust-field-lbl">Protein (g)</label>
+        <input class="cust-inp" id="nutr-cust-protein-inp" type="number" min="0" max="999" step="0.5" placeholder="e.g. 6">
+      </div>
+      <div class="cust-field">
+        <label class="cust-field-lbl">Carbs (g)</label>
+        <input class="cust-inp" id="nutr-cust-carbs-inp" type="number" min="0" max="999" step="0.5" placeholder="e.g. 30">
+      </div>
+      <div class="cust-field">
+        <label class="cust-field-lbl">Fat (g)</label>
+        <input class="cust-inp" id="nutr-cust-fat-inp" type="number" min="0" max="999" step="0.5" placeholder="e.g. 2">
+      </div>
+    </div>
+    <div class="cust-modal-footer">
+      <button class="cust-reset-btn" onclick="resetNutrCustomizeModal()">🔄 Reset to Original</button>
+      <button class="cust-save-btn" onclick="saveNutrCustomizeModal()">Save Changes</button>
     </div>
   </div>
 </div>

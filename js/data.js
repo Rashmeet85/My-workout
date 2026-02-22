@@ -50,21 +50,10 @@ const PHASE_CLS = [
   "phase-deload",
   "phase-test",
 ];
-const DAY_ICONS = ["💪", "🏋️", "🦵", "🚶", "🏔️", "💪", "🍑"];
+// DAY_ICONS order: Mon, Tue, Wed, Thu, Fri, Sat, Sun (week starts Monday)
+const DAY_ICONS = ["🏋️", "🦵", "🚶", "🏔️", "💪", "🍑", "💪"];
 
 const DAYS = [
-  {
-    day: "Sunday",
-    focus: "Chest + Triceps + Cardio",
-    exercises: [
-      { name: "Flat Press (BB/Machine)", sets: "4×6–8", numSets: 4, alt: "Push-ups / DB Press" },
-      { name: "Incline DB Press", sets: "3×8–10", numSets: 3, alt: "Incline Machine Press" },
-      { name: "Cable/DB Flyes", sets: "3×12–15", numSets: 3, alt: "Pec Deck" },
-      { name: "Close-Grip Press / Assisted Dips", sets: "3×8–10", numSets: 3, alt: "Bench Dips (assisted)" },
-      { name: "Rope Triceps Pushdown", sets: "3×12–15", numSets: 3, alt: "Overhead DB Extension" },
-      { name: "Cardio: Incline Walk", sets: "15–20 min", numSets: 0, cardio: true, alt: "Elliptical steady 15–20 min" },
-    ],
-  },
   {
     day: "Monday",
     focus: "Back + Biceps + Cardio",
@@ -134,6 +123,18 @@ const DAYS = [
       { name: "Cardio: Stairs/Incline Walk", sets: "15–20 min", numSets: 0, cardio: true, alt: "Bike steady 15–20 min" },
     ],
   },
+  {
+    day: "Sunday",
+    focus: "Chest + Triceps + Cardio",
+    exercises: [
+      { name: "Flat Press (BB/Machine)", sets: "4×6–8", numSets: 4, alt: "Push-ups / DB Press" },
+      { name: "Incline DB Press", sets: "3×8–10", numSets: 3, alt: "Incline Machine Press" },
+      { name: "Cable/DB Flyes", sets: "3×12–15", numSets: 3, alt: "Pec Deck" },
+      { name: "Close-Grip Press / Assisted Dips", sets: "3×8–10", numSets: 3, alt: "Bench Dips (assisted)" },
+      { name: "Rope Triceps Pushdown", sets: "3×12–15", numSets: 3, alt: "Overhead DB Extension" },
+      { name: "Cardio: Incline Walk", sets: "15–20 min", numSets: 0, cardio: true, alt: "Elliptical steady 15–20 min" },
+    ],
+  },
 ];
 
 const MUSCLE_MAP = {
@@ -189,30 +190,9 @@ const TOTAL_PER_WEEK = DAYS.reduce((s, d) => s + d.exercises.length, 0);
 const TOTAL_ALL = TOTAL_PER_WEEK * 12;
 
 /* ── 7-DAY NUTRITION PLAN ── */
+/* Index 0 = Monday, 1 = Tuesday, ..., 6 = Sunday (week starts Monday) */
 const MEAL_PLAN = {
   0: {
-    label: "Sunday",
-    preGym: {
-      name: "Black Coffee / Fruit",
-      cal: 40,
-      protein: 1,
-      carbs: 8,
-      fat: 0,
-    },
-    breakfast: [
-      { name: "1 Roti", cal: 80, protein: 3, carbs: 15, fat: 1 },
-      { name: "Sabzi + Curd", cal: 120, protein: 7, carbs: 12, fat: 4 },
-    ],
-    snack: [
-      { name: "Nuts", cal: 160, protein: 5, carbs: 6, fat: 14 },
-      { name: "Green Tea", cal: 5, protein: 0, carbs: 1, fat: 0 },
-    ],
-    dinner: [
-      { name: "1 Roti", cal: 80, protein: 3, carbs: 15, fat: 1 },
-      { name: "Light Dal + Veggies", cal: 130, protein: 9, carbs: 18, fat: 2 },
-    ],
-  },
-  1: {
     label: "Monday",
     preGym: {
       name: "Banana (1 medium)",
@@ -233,7 +213,7 @@ const MEAL_PLAN = {
       { name: "Dal + Veggies", cal: 130, protein: 9, carbs: 18, fat: 2 },
     ],
   },
-  2: {
+  1: {
     label: "Tuesday",
     preGym: { name: "Chia Water", cal: 30, protein: 1, carbs: 3, fat: 2 },
     breakfast: [
@@ -242,20 +222,14 @@ const MEAL_PLAN = {
     ],
     snack: [
       { name: "Apple", cal: 80, protein: 0, carbs: 21, fat: 0 },
-      {
-        name: "Peanuts (small handful)",
-        cal: 90,
-        protein: 4,
-        carbs: 3,
-        fat: 7,
-      },
+      { name: "Peanuts (small handful)", cal: 90, protein: 4, carbs: 3, fat: 7 },
     ],
     dinner: [
       { name: "1 Roti", cal: 80, protein: 3, carbs: 15, fat: 1 },
       { name: "Veg Soup + Paneer", cal: 170, protein: 12, carbs: 10, fat: 8 },
     ],
   },
-  3: {
+  2: {
     label: "Wednesday",
     preGym: { name: "Black Coffee", cal: 5, protein: 0, carbs: 0, fat: 0 },
     breakfast: [
@@ -271,7 +245,7 @@ const MEAL_PLAN = {
       { name: "Dal Palak + Salad", cal: 150, protein: 10, carbs: 20, fat: 3 },
     ],
   },
-  4: {
+  3: {
     label: "Thursday",
     preGym: { name: "Papaya (1 cup)", cal: 60, protein: 1, carbs: 15, fat: 0 },
     breakfast: [
@@ -287,7 +261,7 @@ const MEAL_PLAN = {
       { name: "Dal Palak + Salad", cal: 150, protein: 10, carbs: 20, fat: 3 },
     ],
   },
-  5: {
+  4: {
     label: "Friday",
     preGym: {
       name: "Banana (1 medium)",
@@ -306,7 +280,7 @@ const MEAL_PLAN = {
       { name: "Veg Khichdi + Curd", cal: 200, protein: 8, carbs: 32, fat: 4 },
     ],
   },
-  6: {
+  5: {
     label: "Saturday",
     preGym: { name: "Chia Water", cal: 30, protein: 1, carbs: 3, fat: 2 },
     breakfast: [
@@ -316,13 +290,29 @@ const MEAL_PLAN = {
     snack: [{ name: "Fruit Chaat", cal: 100, protein: 1, carbs: 24, fat: 0 }],
     dinner: [
       { name: "1 Roti", cal: 80, protein: 3, carbs: 15, fat: 1 },
-      {
-        name: "Soup + Grilled Paneer",
-        cal: 190,
-        protein: 14,
-        carbs: 10,
-        fat: 10,
-      },
+      { name: "Soup + Grilled Paneer", cal: 190, protein: 14, carbs: 10, fat: 10 },
+    ],
+  },
+  6: {
+    label: "Sunday",
+    preGym: {
+      name: "Black Coffee / Fruit",
+      cal: 40,
+      protein: 1,
+      carbs: 8,
+      fat: 0,
+    },
+    breakfast: [
+      { name: "1 Roti", cal: 80, protein: 3, carbs: 15, fat: 1 },
+      { name: "Sabzi + Curd", cal: 120, protein: 7, carbs: 12, fat: 4 },
+    ],
+    snack: [
+      { name: "Nuts", cal: 160, protein: 5, carbs: 6, fat: 14 },
+      { name: "Green Tea", cal: 5, protein: 0, carbs: 1, fat: 0 },
+    ],
+    dinner: [
+      { name: "1 Roti", cal: 80, protein: 3, carbs: 15, fat: 1 },
+      { name: "Light Dal + Veggies", cal: 130, protein: 9, carbs: 18, fat: 2 },
     ],
   },
 };
