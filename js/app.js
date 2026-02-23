@@ -1674,6 +1674,66 @@ function renderCustomizePage() {
   wrap.innerHTML = html;
 }
 
+/* ── EXERCISE LIBRARY PICKER helpers ── */
+function _buildCustCategoryDropdown(selectedName) {
+  const catSel = document.getElementById('cust-cat-sel');
+  catSel.innerHTML = '<option value="">— Select category —</option>';
+  // Find which category the selected name belongs to (if any)
+  let foundCat = '';
+  for (const [cat, exList] of Object.entries(EXERCISE_LIBRARY)) {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    catSel.appendChild(opt);
+    if (exList.some(e => e.name === selectedName)) foundCat = cat;
+  }
+  if (foundCat) {
+    catSel.value = foundCat;
+    _buildCustExDropdown(foundCat, selectedName);
+  } else {
+    document.getElementById('cust-ex-sel').innerHTML = '<option value="">— Select exercise —</option>';
+    document.getElementById('cust-lib-tip').style.display = 'none';
+  }
+}
+
+function _buildCustExDropdown(cat, selectedName) {
+  const exSel = document.getElementById('cust-ex-sel');
+  exSel.innerHTML = '<option value="">— Select exercise —</option>';
+  if (!cat || !EXERCISE_LIBRARY[cat]) return;
+  EXERCISE_LIBRARY[cat].forEach(ex => {
+    const opt = document.createElement('option');
+    opt.value = ex.name;
+    opt.textContent = ex.name;
+    exSel.appendChild(opt);
+  });
+  if (selectedName) exSel.value = selectedName;
+  _showCustLibTip(selectedName);
+  document.getElementById('cust-name-inp').value = selectedName || '';
+}
+
+function _showCustLibTip(name) {
+  const tipEl = document.getElementById('cust-lib-tip');
+  const tips = name ? getLibraryTips(name) : null;
+  if (tips) {
+    tipEl.style.display = '';
+    tipEl.innerHTML = `<div class="cust-lib-tip-muscles">💪 ${esc(tips.muscles)}</div>
+      <div class="cust-lib-tip-cues">${tips.cues.map((c,i) => `<div class="cust-lib-tip-cue"><span>${i+1}</span>${esc(c)}</div>`).join('')}</div>`;
+  } else {
+    tipEl.style.display = 'none';
+  }
+}
+
+function onCustCatChange() {
+  const cat = document.getElementById('cust-cat-sel').value;
+  _buildCustExDropdown(cat, '');
+}
+
+function onCustExChange() {
+  const name = document.getElementById('cust-ex-sel').value;
+  document.getElementById('cust-name-inp').value = name;
+  _showCustLibTip(name);
+}
+
 function openCustomizeModal(dayIdx, exIdx) {
   const ex = DAYS[dayIdx].exercises[exIdx];
   customizeEditState = { dayIdx, exIdx };
@@ -1689,30 +1749,26 @@ function openCustomizeModal(dayIdx, exIdx) {
 
   // Load existing values (try global first)
   const globalOvr = lsj(`cex_all_d${dayIdx}_e${exIdx}`);
-  if (globalOvr) {
-    document.getElementById('cust-name-inp').value = globalOvr.name || ex.name;
-    document.getElementById('cust-sets-inp').value = globalOvr.sets || ex.sets;
-    document.getElementById('cust-alt-inp').value  = globalOvr.alt  !== undefined ? globalOvr.alt : (ex.alt || '');
-  } else {
-    document.getElementById('cust-name-inp').value = ex.name;
-    document.getElementById('cust-sets-inp').value = ex.sets;
-    document.getElementById('cust-alt-inp').value  = ex.alt || '';
-  }
+  const activeName = globalOvr ? (globalOvr.name || ex.name) : ex.name;
+  document.getElementById('cust-sets-inp').value = globalOvr ? (globalOvr.sets || ex.sets) : ex.sets;
+  document.getElementById('cust-alt-inp').value  = globalOvr ? (globalOvr.alt !== undefined ? globalOvr.alt : (ex.alt || '')) : (ex.alt || '');
+  document.getElementById('cust-name-inp').value = activeName;
+  _buildCustCategoryDropdown(activeName);
 
-  // When week changes, load that week's override if any
+  // When week changes, reload
   weekSel.onchange = function() {
+    let ovr;
     if (this.value === 'all') {
-      const ovr = lsj(`cex_all_d${dayIdx}_e${exIdx}`);
-      document.getElementById('cust-name-inp').value = ovr ? ovr.name : ex.name;
-      document.getElementById('cust-sets-inp').value = ovr ? ovr.sets : ex.sets;
-      document.getElementById('cust-alt-inp').value  = ovr ? (ovr.alt || '') : (ex.alt || '');
+      ovr = lsj(`cex_all_d${dayIdx}_e${exIdx}`);
     } else {
       const w = parseInt(this.value);
-      const weekOvr = lsj(`cex_w${w}_d${dayIdx}_e${exIdx}`) || lsj(`cex_all_d${dayIdx}_e${exIdx}`);
-      document.getElementById('cust-name-inp').value = weekOvr ? weekOvr.name : ex.name;
-      document.getElementById('cust-sets-inp').value = weekOvr ? weekOvr.sets : ex.sets;
-      document.getElementById('cust-alt-inp').value  = weekOvr ? (weekOvr.alt || '') : (ex.alt || '');
+      ovr = lsj(`cex_w${w}_d${dayIdx}_e${exIdx}`) || lsj(`cex_all_d${dayIdx}_e${exIdx}`);
     }
+    const nm = ovr ? (ovr.name || ex.name) : ex.name;
+    document.getElementById('cust-sets-inp').value = ovr ? (ovr.sets || ex.sets) : ex.sets;
+    document.getElementById('cust-alt-inp').value  = ovr ? (ovr.alt || '') : (ex.alt || '');
+    document.getElementById('cust-name-inp').value = nm;
+    _buildCustCategoryDropdown(nm);
   };
 
   document.getElementById('cust-modal').classList.add('open');
@@ -1727,8 +1783,11 @@ function saveCustomizeModal() {
   const alt     = document.getElementById('cust-alt-inp').value.trim();
 
   if (!name) {
-    document.getElementById('cust-name-inp').style.borderColor = 'rgba(248,113,113,0.5)';
-    setTimeout(() => document.getElementById('cust-name-inp').style.borderColor = '', 1200);
+    // Flash the exercise dropdown to signal required
+    const exSel = document.getElementById('cust-ex-sel');
+    exSel.style.borderColor = 'rgba(248,113,113,0.5)';
+    setTimeout(() => exSel.style.borderColor = '', 1200);
+    showToast('⚠️', 'Please select an exercise first!');
     return;
   }
 
@@ -1762,9 +1821,10 @@ function resetCustomizeModal() {
     showToast('🔄', `Reset to original for Week ${w}`);
   }
   const ex = DAYS[dayIdx].exercises[exIdx];
-  document.getElementById('cust-name-inp').value = ex.name;
   document.getElementById('cust-sets-inp').value = ex.sets;
   document.getElementById('cust-alt-inp').value  = ex.alt || '';
+  document.getElementById('cust-name-inp').value = ex.name;
+  _buildCustCategoryDropdown(ex.name);
   closeCustomizeModal();
   renderCustomizePage();
 }
@@ -2178,10 +2238,16 @@ function openExModal(week, dayIdx, exIdx) {
 
   const customEx     = getCustomExercise(week, dayIdx, exIdx);
   const displayName  = customEx ? customEx.name : ex.name;
-  const imgUrl       = EX_IMAGES[ex.name];
+  const imgUrl       = EX_IMAGES[displayName] || EX_IMAGES[ex.name];
   const isCardio     = !!ex.cardio;
-  const formTip      = EX_FORM_TIPS[ex.name];
-  const cardioTip    = CARDIO_TIPS[ex.name];
+  // Tips: always look up by what's actually displayed (custom name first, then original)
+  // This ensures swapped exercises show THEIR instructions, not the original slot's
+  const formTip = EX_FORM_TIPS[displayName]
+    || getLibraryTips(displayName)
+    || EX_FORM_TIPS[ex.name]
+    || getLibraryTips(ex.name)
+    || null;
+  const cardioTip    = CARDIO_TIPS[displayName] || CARDIO_TIPS[ex.name];
 
   // Header
   document.getElementById('ex-modal-name').textContent = displayName;

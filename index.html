@@ -380,7 +380,21 @@
     </div>
     <div class="cust-modal-body">
       <div class="cust-field"><label class="cust-field-lbl">Apply to</label><select class="cust-sel" id="cust-week-sel"></select></div>
-      <div class="cust-field"><label class="cust-field-lbl">Exercise Name</label><input class="cust-inp" id="cust-name-inp" type="text" placeholder="Exercise name"></div>
+      <div class="cust-field">
+        <label class="cust-field-lbl">Muscle Category</label>
+        <select class="cust-sel" id="cust-cat-sel" onchange="onCustCatChange()">
+          <option value="">— Select category —</option>
+        </select>
+      </div>
+      <div class="cust-field">
+        <label class="cust-field-lbl">Exercise</label>
+        <select class="cust-sel" id="cust-ex-sel" onchange="onCustExChange()">
+          <option value="">— Select exercise —</option>
+        </select>
+      </div>
+      <!-- hidden input keeps all save/reset logic unchanged -->
+      <input type="hidden" id="cust-name-inp">
+      <div class="cust-lib-tip" id="cust-lib-tip" style="display:none"></div>
       <div class="cust-field"><label class="cust-field-lbl">Sets × Reps</label><input class="cust-inp" id="cust-sets-inp" type="text" placeholder="e.g. 4×6–8"></div>
       <div class="cust-field"><label class="cust-field-lbl">Alternative Exercise</label><input class="cust-inp" id="cust-alt-inp" type="text" placeholder="e.g. Push-ups"></div>
     </div>
