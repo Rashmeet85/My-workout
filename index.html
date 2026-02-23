@@ -19,19 +19,50 @@
 </head>
 <body>
 
-<!-- ── NAV ── -->
+<!-- SIDE DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- SIDE DRAWER -->
+<nav class="side-drawer" id="side-drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo">12WK <span>GRIND</span></div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-streak">🔥 <span id="drawer-streak-num">0</span> day streak</div>
+  <div class="drawer-nav">
+    <button class="drawer-btn active" id="dnav-home" onclick="showPage('home');closeDrawer()">🏠 <span>Home</span></button>
+    <button class="drawer-btn" id="dnav-nutr" onclick="showPage('nutr');closeDrawer()">🥗 <span>Nutrition</span></button>
+    <button class="drawer-btn" id="dnav-warmup" onclick="showPage('warmup');closeDrawer()">🔥 <span>Warmup</span></button>
+    <button class="drawer-btn" id="dnav-hiit" onclick="showPage('hiit');closeDrawer()">⚡ <span>HIIT</span></button>
+    <button class="drawer-btn" id="dnav-vol" onclick="showPage('vol');closeDrawer()">📊 <span>Volume</span></button>
+    <button class="drawer-btn" id="dnav-cal" onclick="showPage('cal');closeDrawer()">📅 <span>Calendar</span></button>
+    <button class="drawer-btn" id="dnav-goals" onclick="showPage('goals');closeDrawer()">🎯 <span>Goals</span></button>
+    <button class="drawer-btn" id="dnav-pr" onclick="showPage('pr');closeDrawer()">💪 <span>PRs</span></button>
+    <button class="drawer-btn" id="dnav-bmi" onclick="showPage('bmi');closeDrawer()">⚖️ <span>BMI &amp; Calories</span></button>
+    <button class="drawer-btn" id="dnav-customize" onclick="showPage('customize');closeDrawer()">⚙️ <span>Customize</span></button>
+    <button class="drawer-btn" id="dnav-week" onclick="showPage('week');closeDrawer()" style="display:none">📋 <span>Week View</span></button>
+  </div>
+  <div class="drawer-footer">
+    <button class="drawer-theme-btn" onclick="toggleTheme()" id="theme-btn-drawer">🌙 Toggle Theme</button>
+  </div>
+</nav>
+
+<!-- TOP NAV (compact — quick access) -->
 <nav class="nav">
+  <button class="nav-hamburger" onclick="openDrawer()" title="Menu">☰</button>
   <div class="nav-logo">12WK</div>
   <button class="nav-btn active" id="nav-home" onclick="showPage('home')">🏠 <span>Home</span></button>
-  <button class="nav-btn" id="nav-week" onclick="showPage('week')" style="display:none">📋 <span>Week</span></button>
+  <button class="nav-btn" id="nav-nutr" onclick="showPage('nutr')">🥗 <span>Nutrition</span></button>
   <button class="nav-btn" id="nav-warmup" onclick="showPage('warmup')">🔥 <span>Warmup</span></button>
   <button class="nav-btn" id="nav-hiit" onclick="showPage('hiit')">⚡ <span>HIIT</span></button>
-  <button class="nav-btn" id="nav-nutr" onclick="showPage('nutr')">🥗 <span>Nutrition</span></button>
-  <button class="nav-btn" id="nav-vol" onclick="showPage('vol')">📊 <span>Volume</span></button>
-  <button class="nav-btn" id="nav-pr" onclick="showPage('pr')">💪 <span>PRs</span></button>
-  <button class="nav-btn" id="nav-cal" onclick="showPage('cal')">📅 <span>Calendar</span></button>
-  <button class="nav-btn" id="nav-goals" onclick="showPage('goals')">🎯 <span>Goals</span></button>
-  <button class="nav-btn" id="nav-customize" onclick="showPage('customize')">⚙️ <span>Customize</span></button>
+  <button class="nav-btn" id="nav-vol" onclick="showPage('vol')">📊 <span>Vol</span></button>
+  <!-- hidden nav anchors for drawer pages -->
+  <button class="nav-btn nav-hidden" id="nav-week">📋</button>
+  <button class="nav-btn nav-hidden" id="nav-cal">📅</button>
+  <button class="nav-btn nav-hidden" id="nav-goals">🎯</button>
+  <button class="nav-btn nav-hidden" id="nav-pr">💪</button>
+  <button class="nav-btn nav-hidden" id="nav-bmi">⚖️</button>
+  <button class="nav-btn nav-hidden" id="nav-customize">⚙️</button>
   <div class="nav-spacer"></div>
   <div class="nav-right">
     <div class="nav-streak">🔥 <span id="streak-num">0</span></div>
@@ -39,7 +70,7 @@
   </div>
 </nav>
 
-<!-- ── HOME PAGE ── -->
+<!-- HOME PAGE -->
 <div id="page-home" class="page active">
   <div id="today-banner-wrap"></div>
   <div class="hero">
@@ -52,37 +83,16 @@
     </div>
   </div>
   <div class="stat-strip">
-    <div class="stat-card c-green">
-      <div class="stat-icon">💪</div>
-      <div class="stat-val" id="stat-wks">0</div>
-      <div class="stat-label">Weeks Done</div>
-    </div>
-    <div class="stat-card c-blue">
-      <div class="stat-icon">✅</div>
-      <div class="stat-val" id="stat-ex">0</div>
-      <div class="stat-label">Exercises</div>
-    </div>
-    <div class="stat-card c-gold">
-      <div class="stat-icon">🎯</div>
-      <div class="stat-val" id="stat-goals-cnt">0</div>
-      <div class="stat-label">Goals Crushed</div>
-    </div>
-    <div class="stat-card c-green2">
-      <div class="stat-icon">📈</div>
-      <div class="stat-val" id="stat-pct">0%</div>
-      <div class="stat-label">Complete</div>
-    </div>
+    <div class="stat-card c-green"><div class="stat-icon">💪</div><div class="stat-val" id="stat-wks">0</div><div class="stat-label">Weeks Done</div></div>
+    <div class="stat-card c-blue"><div class="stat-icon">✅</div><div class="stat-val" id="stat-ex">0</div><div class="stat-label">Exercises</div></div>
+    <div class="stat-card c-gold"><div class="stat-icon">🎯</div><div class="stat-val" id="stat-goals-cnt">0</div><div class="stat-label">Goals Crushed</div></div>
+    <div class="stat-card c-green2"><div class="stat-icon">📈</div><div class="stat-val" id="stat-pct">0%</div><div class="stat-label">Complete</div></div>
   </div>
   <div class="home-section">
-    <div class="section-head">
-      <div class="section-title">Overall Progress</div>
-    </div>
+    <div class="section-head"><div class="section-title">Overall Progress</div></div>
     <div class="prog-card">
       <div class="prog-top">
-        <div>
-          <div class="prog-label">Program Completion</div>
-          <div class="prog-sub" id="prog-sub">Just getting started</div>
-        </div>
+        <div><div class="prog-label">Program Completion</div><div class="prog-sub" id="prog-sub">Just getting started</div></div>
         <div class="prog-pct" id="prog-pct-big">0%</div>
       </div>
       <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
@@ -90,27 +100,12 @@
     </div>
   </div>
   <div class="home-section">
-    <div class="section-head">
-      <div class="section-title">Body Weight</div>
-      <button class="section-action" onclick="showPage('goals')">+ Goal</button>
-    </div>
+    <div class="section-head"><div class="section-title">Body Weight</div><button class="section-action" onclick="showPage('goals')">+ Goal</button></div>
     <div class="weight-card">
       <div class="wstats-row">
-        <div class="wstat">
-          <div class="wstat-lbl">Starting</div>
-          <div class="wstat-val" id="wt-start">—</div>
-          <div class="wstat-sub" id="wt-start-sub">No data</div>
-        </div>
-        <div class="wstat">
-          <div class="wstat-lbl">Current</div>
-          <div class="wstat-val" id="wt-cur">—</div>
-          <div class="wstat-sub" id="wt-cur-sub">No data</div>
-        </div>
-        <div class="wstat">
-          <div class="wstat-lbl">Change</div>
-          <div class="wstat-val" id="wt-chg">—</div>
-          <div class="wstat-sub" id="wt-chg-sub">Log 2+ weeks</div>
-        </div>
+        <div class="wstat"><div class="wstat-lbl">Starting</div><div class="wstat-val" id="wt-start">—</div><div class="wstat-sub" id="wt-start-sub">No data</div></div>
+        <div class="wstat"><div class="wstat-lbl">Current</div><div class="wstat-val" id="wt-cur">—</div><div class="wstat-sub" id="wt-cur-sub">No data</div></div>
+        <div class="wstat"><div class="wstat-lbl">Change</div><div class="wstat-val" id="wt-chg">—</div><div class="wstat-sub" id="wt-chg-sub">Log 2+ weeks</div></div>
       </div>
       <div class="chart-wrap">
         <div class="chart-controls">
@@ -133,10 +128,7 @@
     <div class="section-head"><div class="section-title">🔔 Daily Reminder</div></div>
     <div class="notif-card">
       <div class="notif-row">
-        <div class="notif-label">
-          Workout Reminder
-          <span>Get notified once daily while the app is open</span>
-        </div>
+        <div class="notif-label">Workout Reminder<span>Get notified once daily while the app is open</span></div>
         <label class="notif-toggle" title="Enable daily reminder">
           <input type="checkbox" id="notif-toggle-inp" onchange="saveNotifSettings()">
           <span class="notif-slider"></span>
@@ -149,7 +141,7 @@
   </div>
 </div>
 
-<!-- ── WEEK PAGE ── -->
+<!-- WEEK PAGE -->
 <div id="page-week" class="page">
   <div class="wk-wrap">
     <button class="wk-back" onclick="showPage('home')">← Back to Home</button>
@@ -163,64 +155,44 @@
   </div>
 </div>
 
-<!-- ── WARMUP PAGE ── -->
+<!-- WARMUP PAGE -->
 <div id="page-warmup" class="page">
   <div class="warmup-wrap">
-    <div class="warmup-header">
-      <h2>🔥 WARMUP</h2>
-      <p>Tap a muscle group to see the warm-up exercises. Always warm up before lifting!</p>
-    </div>
+    <div class="warmup-header"><h2>🔥 WARMUP</h2><p>Tap a muscle group to see the warm-up exercises. Always warm up before lifting!</p></div>
     <div class="warmup-grid" id="warmup-grid"></div>
     <div id="warmup-detail-container"></div>
   </div>
 </div>
 
-<!-- ── HIIT PAGE ── -->
+<!-- HIIT PAGE -->
 <div id="page-hiit" class="page">
   <div class="hiit-wrap">
-    <div class="hiit-header">
-      <h2>⚡ HIIT TRAINING</h2>
-      <p>Choose your goal and follow the guided workout with the built-in interval timer.</p>
-    </div>
+    <div class="hiit-header"><h2>⚡ HIIT TRAINING</h2><p>Choose your goal and follow the guided workout with the built-in interval timer.</p></div>
     <div class="hiit-goal-grid" id="hiit-goal-grid"></div>
     <div id="hiit-detail-container"></div>
     <div class="hiit-tips-section">
       <div class="hiit-tips-title">HIIT TIPS</div>
       <div class="hiit-tips-grid">
-        <div class="hiit-tip-card"><div class="hiit-tip-icon">💧</div><div class="hiit-tip-text">Hydrate well before starting. Dehydration tanks performance fast.</div></div>
-        <div class="hiit-tip-card"><div class="hiit-tip-icon">🔥</div><div class="hiit-tip-text">Always do a 5-min warmup. Cold muscles + HIIT = injury risk.</div></div>
-        <div class="hiit-tip-card"><div class="hiit-tip-icon">📈</div><div class="hiit-tip-text">Progress by adding rounds, not shortening rest — quality matters.</div></div>
-        <div class="hiit-tip-card"><div class="hiit-tip-icon">🛌</div><div class="hiit-tip-text">1–2 HIIT sessions per week is enough. Recovery is where you grow.</div></div>
-        <div class="hiit-tip-card"><div class="hiit-tip-icon">⏱</div><div class="hiit-tip-text">Use the timer. Guessing interval lengths defeats the purpose.</div></div>
-        <div class="hiit-tip-card"><div class="hiit-tip-icon">🎯</div><div class="hiit-tip-text">Full effort in work phases. If you can talk, push harder.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">💧</div><div class="hiit-tip-text">Hydrate well before starting.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">🔥</div><div class="hiit-tip-text">Always do a 5-min warmup first.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">📈</div><div class="hiit-tip-text">Progress by adding rounds, not shortening rest.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">🛌</div><div class="hiit-tip-text">1–2 HIIT sessions/week is enough.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">⏱</div><div class="hiit-tip-text">Use the timer. Guessing defeats the purpose.</div></div>
+        <div class="hiit-tip-card"><div class="hiit-tip-icon">🎯</div><div class="hiit-tip-text">Full effort in work phases.</div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ── GOALS PAGE ── -->
+<!-- GOALS PAGE -->
 <div id="page-goals" class="page">
   <div class="goals-wrap">
-    <div class="goals-header">
-      <h2>🎯 GOALS</h2>
-      <p>Set targets. Crush them.</p>
-    </div>
+    <div class="goals-header"><h2>🎯 GOALS</h2><p>Set targets. Crush them.</p></div>
     <div class="add-goal-card">
       <div class="add-goal-title">➕ New Goal</div>
       <div class="goal-form-row">
-        <div class="goal-field" style="flex:2;min-width:200px">
-          <label class="goal-field-lbl">Description</label>
-          <input class="goal-inp" id="goal-txt-inp" placeholder="e.g. Bench 80kg, lose 5kg…">
-        </div>
-        <div class="goal-field">
-          <label class="goal-field-lbl">Category</label>
-          <select class="goal-inp" id="goal-type-inp">
-            <option value="workout">💪 Workout</option>
-            <option value="weight">⚖️ Weight</option>
-            <option value="strength">🏋️ Strength</option>
-            <option value="other">⭐ Other</option>
-          </select>
-        </div>
+        <div class="goal-field" style="flex:2;min-width:200px"><label class="goal-field-lbl">Description</label><input class="goal-inp" id="goal-txt-inp" placeholder="e.g. Bench 80kg, lose 5kg…"></div>
+        <div class="goal-field"><label class="goal-field-lbl">Category</label><select class="goal-inp" id="goal-type-inp"><option value="workout">💪 Workout</option><option value="weight">⚖️ Weight</option><option value="strength">🏋️ Strength</option><option value="other">⭐ Other</option></select></div>
         <button class="goal-add-btn" onclick="addGoal()">+ Add</button>
       </div>
     </div>
@@ -232,28 +204,19 @@
   </div>
 </div>
 
-<!-- ── PR PAGE ── -->
+<!-- PR PAGE -->
 <div id="page-pr" class="page">
   <div class="pr-wrap">
-    <div class="pr-header">
-      <h2>💪 PERSONAL RECORDS</h2>
-      <p>Track your best lifts. A 🔥 badge appears whenever you set a new PR.</p>
-    </div>
+    <div class="pr-header"><h2>💪 PERSONAL RECORDS</h2><p>Track your best lifts. A 🔥 badge appears whenever you set a new PR.</p></div>
     <div class="pr-grid" id="pr-grid"></div>
-    <div class="pr-history">
-      <div class="pr-history-title">PR History</div>
-      <div class="pr-hist-list" id="pr-hist-list"></div>
-    </div>
+    <div class="pr-history"><div class="pr-history-title">PR History</div><div class="pr-hist-list" id="pr-hist-list"></div></div>
   </div>
 </div>
 
-<!-- ── VOLUME PAGE ── -->
+<!-- VOLUME PAGE -->
 <div id="page-vol" class="page">
   <div class="vol-wrap">
-    <div class="vol-header">
-      <h2>📊 MUSCLE VOLUME</h2>
-      <p>Sets per muscle group per week — stay balanced.</p>
-    </div>
+    <div class="vol-header"><h2>📊 MUSCLE VOLUME</h2><p>Sets per muscle group per week — stay balanced.</p></div>
     <div class="vol-week-select" id="vol-week-select"></div>
     <div class="vol-grid" id="vol-grid"></div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:4px;">
@@ -263,13 +226,10 @@
   </div>
 </div>
 
-<!-- ── CALENDAR PAGE ── -->
+<!-- CALENDAR PAGE -->
 <div id="page-cal" class="page">
   <div class="cal-wrap">
-    <div class="cal-header">
-      <h2>📅 CALENDAR</h2>
-      <p>Your workout history at a glance.</p>
-    </div>
+    <div class="cal-header"><h2>📅 CALENDAR</h2><p>Your workout history at a glance.</p></div>
     <div class="cal-legend">
       <div class="cal-leg-item"><div class="cal-leg-dot green"></div> Completed</div>
       <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--orange)"></div> Partial</div>
@@ -285,15 +245,10 @@
   </div>
 </div>
 
-<!-- ── NUTRITION PAGE ── -->
+<!-- NUTRITION PAGE -->
 <div id="page-nutr" class="page">
   <div class="nutr-wrap">
-    <div class="nutr-header">
-      <h2>🥗 NUTRITION</h2>
-      <p>7-day vegetarian meal plan · Track calories &amp; macros</p>
-    </div>
-
-    <!-- Calorie Ring -->
+    <div class="nutr-header"><h2>🥗 NUTRITION</h2><p>7-day vegetarian meal plan · Track calories &amp; macros</p></div>
     <div class="cal-summary">
       <div class="cal-ring-wrap">
         <svg class="cal-ring-svg" viewBox="0 0 100 100">
@@ -312,18 +267,9 @@
           <div class="cal-stat c-green"><div class="cal-stat-val" id="macro-fat-val">0g</div><div class="cal-stat-lbl">Fat</div></div>
         </div>
         <div class="macro-bars" style="margin-top:12px;margin-bottom:0;padding:12px 16px;">
-          <div class="macro-bar-row">
-            <div class="macro-bar-head"><span class="macro-bar-name">Protein</span><span class="macro-bar-val" id="mb-protein-val">0 / 100g</span></div>
-            <div class="macro-track"><div class="macro-fill protein" id="mb-protein" style="width:0%"></div></div>
-          </div>
-          <div class="macro-bar-row">
-            <div class="macro-bar-head"><span class="macro-bar-name">Carbs</span><span class="macro-bar-val" id="mb-carbs-val">0 / 200g</span></div>
-            <div class="macro-track"><div class="macro-fill carbs" id="mb-carbs" style="width:0%"></div></div>
-          </div>
-          <div class="macro-bar-row">
-            <div class="macro-bar-head"><span class="macro-bar-name">Fat</span><span class="macro-bar-val" id="mb-fat-val">0 / 60g</span></div>
-            <div class="macro-track"><div class="macro-fill fat" id="mb-fat" style="width:0%"></div></div>
-          </div>
+          <div class="macro-bar-row"><div class="macro-bar-head"><span class="macro-bar-name">Protein</span><span class="macro-bar-val" id="mb-protein-val">0 / 100g</span></div><div class="macro-track"><div class="macro-fill protein" id="mb-protein" style="width:0%"></div></div></div>
+          <div class="macro-bar-row"><div class="macro-bar-head"><span class="macro-bar-name">Carbs</span><span class="macro-bar-val" id="mb-carbs-val">0 / 200g</span></div><div class="macro-track"><div class="macro-fill carbs" id="mb-carbs" style="width:0%"></div></div></div>
+          <div class="macro-bar-row"><div class="macro-bar-head"><span class="macro-bar-name">Fat</span><span class="macro-bar-val" id="mb-fat-val">0 / 60g</span></div><div class="macro-track"><div class="macro-fill fat" id="mb-fat" style="width:0%"></div></div></div>
         </div>
         <div class="cal-goal-row">
           <span class="cal-goal-lbl">Daily Goal:</span>
@@ -332,34 +278,90 @@
           <button class="cal-set-goal-btn" onclick="setCalGoal()">Set</button>
           <span style="font-size:11px;color:var(--text2)" id="cal-remaining-lbl"></span>
         </div>
+        <div id="bmi-nutr-status" style="margin-top:8px"></div>
       </div>
     </div>
-
-    <!-- Water tracker -->
     <div class="water-card">
-      <div class="water-head">
-        <div class="water-title">💧 Water Intake</div>
-        <div class="water-val" id="water-val">0 / 8 glasses</div>
-      </div>
+      <div class="water-head"><div class="water-title">💧 Water Intake</div><div class="water-val" id="water-val">0 / 8 glasses</div></div>
       <div class="water-cups" id="water-cups"></div>
       <div class="water-hist-wrap" id="water-hist-wrap"></div>
     </div>
-
-    <!-- Day tabs -->
     <div class="nutr-day-tabs" id="nutr-day-tabs"></div>
-
-    <!-- Meal items -->
     <div id="nutr-meals"></div>
   </div>
 </div>
 
-<!-- ── CUSTOMIZE PAGE ── -->
+<!-- BMI & CALORIES PAGE -->
+<div id="page-bmi" class="page">
+  <div class="bmi-wrap">
+    <div class="bmi-header">
+      <h2>⚖️ BMI &amp; CALORIES</h2>
+      <p>Enter your stats to get BMI, TDEE and daily calorie targets synced with your Nutrition tab.</p>
+    </div>
+    <div class="bmi-input-card">
+      <div class="bmi-form-grid">
+        <div class="bmi-field"><label class="bmi-lbl">Height (cm)</label><input class="bmi-inp" id="bmi-height" type="number" min="100" max="250" placeholder="e.g. 175"></div>
+        <div class="bmi-field"><label class="bmi-lbl">Weight (kg)</label><input class="bmi-inp" id="bmi-weight" type="number" min="30" max="300" placeholder="e.g. 70"></div>
+        <div class="bmi-field"><label class="bmi-lbl">Age</label><input class="bmi-inp" id="bmi-age" type="number" min="10" max="100" placeholder="e.g. 25"></div>
+        <div class="bmi-field"><label class="bmi-lbl">Sex</label><select class="bmi-inp" id="bmi-sex"><option value="male">Male</option><option value="female">Female</option></select></div>
+        <div class="bmi-field bmi-field-wide"><label class="bmi-lbl">Activity Level</label><select class="bmi-inp" id="bmi-activity"><option value="1.2">Sedentary (desk job, no exercise)</option><option value="1.375">Light (1–3 days/week)</option><option value="1.55" selected>Moderate (3–5 days/week) ← you</option><option value="1.725">Active (6–7 days hard training)</option><option value="1.9">Very Active (athlete / physical job)</option></select></div>
+        <div class="bmi-field bmi-field-wide"><label class="bmi-lbl">Goal</label><select class="bmi-inp" id="bmi-goal"><option value="cut">Fat Loss (−500 kcal/day)</option><option value="maintain">Maintain weight</option><option value="bulk">Muscle Gain (+300 kcal/day)</option></select></div>
+      </div>
+      <button class="bmi-calc-btn" onclick="calcBMI()">Calculate 🔢</button>
+    </div>
+
+    <div id="bmi-results" style="display:none">
+      <div class="bmi-result-card bmi-gauge-card">
+        <div class="bmi-result-title">Your BMI</div>
+        <div class="bmi-gauge-wrap">
+          <div class="bmi-gauge-bar">
+            <div class="bmi-gauge-segment" style="background:#60a5fa;flex:1.5"></div>
+            <div class="bmi-gauge-segment" style="background:#34d399;flex:2"></div>
+            <div class="bmi-gauge-segment" style="background:#fbbf24;flex:1.5"></div>
+            <div class="bmi-gauge-segment" style="background:#f87171;flex:2"></div>
+            <div class="bmi-gauge-marker" id="bmi-gauge-marker"></div>
+          </div>
+          <div class="bmi-gauge-labels">
+            <span>Underweight<br>&lt;18.5</span>
+            <span>Normal<br>18.5–25</span>
+            <span>Overweight<br>25–30</span>
+            <span>Obese<br>30+</span>
+          </div>
+        </div>
+        <div class="bmi-big-num" id="bmi-value">—</div>
+        <div class="bmi-category" id="bmi-category">—</div>
+        <div class="bmi-ideal-range" id="bmi-ideal-range"></div>
+      </div>
+
+      <div class="bmi-result-card">
+        <div class="bmi-result-title">Daily Calorie Targets</div>
+        <div class="bmi-cal-grid">
+          <div class="bmi-cal-item"><div class="bmi-cal-icon">🔥</div><div class="bmi-cal-val" id="bmi-bmr">—</div><div class="bmi-cal-lbl">BMR<br><small>at complete rest</small></div></div>
+          <div class="bmi-cal-item"><div class="bmi-cal-icon">⚡</div><div class="bmi-cal-val" id="bmi-tdee">—</div><div class="bmi-cal-lbl">TDEE<br><small>maintenance</small></div></div>
+          <div class="bmi-cal-item bmi-cal-goal-item"><div class="bmi-cal-icon">🎯</div><div class="bmi-cal-val" id="bmi-target">—</div><div class="bmi-cal-lbl" id="bmi-target-lbl">Goal Calories</div></div>
+          <div class="bmi-cal-item"><div class="bmi-cal-icon">💨</div><div class="bmi-cal-val" id="bmi-burn">—</div><div class="bmi-cal-lbl">Calories to Burn<br><small>vs goal today</small></div></div>
+        </div>
+      </div>
+
+      <div class="bmi-result-card" id="bmi-today-nutr-card">
+        <div class="bmi-result-title">Today's Nutrition Status</div>
+        <div id="bmi-today-nutr-body"></div>
+      </div>
+
+      <div class="bmi-result-card">
+        <div class="bmi-result-title">Recommended Macros (for goal)</div>
+        <div class="bmi-macro-grid" id="bmi-macro-grid"></div>
+      </div>
+
+      <button class="bmi-apply-btn" onclick="applyBMICalGoal()">Apply to Nutrition Goal 📋</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMIZE PAGE -->
 <div id="page-customize" class="page">
   <div class="cust-wrap">
-    <div class="cust-header">
-      <h2>⚙️ CUSTOMIZE</h2>
-      <p>Edit exercises or meal plans for any day, applied globally or per-week.</p>
-    </div>
+    <div class="cust-header"><h2>⚙️ CUSTOMIZE</h2><p>Edit exercises or meal plans for any day, applied globally or per-week.</p></div>
     <div class="cust-tabs-row">
       <button class="cust-tab-btn active" id="cust-tab-workout" onclick="switchCustomizeTab('workout')">💪 Workout</button>
       <button class="cust-tab-btn" id="cust-tab-nutrition" onclick="switchCustomizeTab('nutrition')">🥗 Nutrition</button>
@@ -369,33 +371,18 @@
   </div>
 </div>
 
-<!-- ── CUSTOMIZE MODAL ── -->
+<!-- CUSTOMIZE MODAL -->
 <div class="cust-modal-overlay" id="cust-modal" onclick="if(event.target===this)closeCustomizeModal()">
   <div class="cust-modal-box">
     <div class="cust-modal-hd">
-      <div>
-        <div class="cust-modal-title" id="cust-modal-title">Edit Exercise</div>
-        <div class="cust-modal-day" id="cust-modal-day"></div>
-      </div>
+      <div><div class="cust-modal-title" id="cust-modal-title">Edit Exercise</div><div class="cust-modal-day" id="cust-modal-day"></div></div>
       <button class="cust-modal-close" onclick="closeCustomizeModal()">✕</button>
     </div>
     <div class="cust-modal-body">
-      <div class="cust-field">
-        <label class="cust-field-lbl">Apply to</label>
-        <select class="cust-sel" id="cust-week-sel"></select>
-      </div>
-      <div class="cust-field">
-        <label class="cust-field-lbl">Exercise Name</label>
-        <input class="cust-inp" id="cust-name-inp" type="text" placeholder="Exercise name">
-      </div>
-      <div class="cust-field">
-        <label class="cust-field-lbl">Sets × Reps</label>
-        <input class="cust-inp" id="cust-sets-inp" type="text" placeholder="e.g. 4×6–8">
-      </div>
-      <div class="cust-field">
-        <label class="cust-field-lbl">Alternative Exercise</label>
-        <input class="cust-inp" id="cust-alt-inp" type="text" placeholder="e.g. Push-ups">
-      </div>
+      <div class="cust-field"><label class="cust-field-lbl">Apply to</label><select class="cust-sel" id="cust-week-sel"></select></div>
+      <div class="cust-field"><label class="cust-field-lbl">Exercise Name</label><input class="cust-inp" id="cust-name-inp" type="text" placeholder="Exercise name"></div>
+      <div class="cust-field"><label class="cust-field-lbl">Sets × Reps</label><input class="cust-inp" id="cust-sets-inp" type="text" placeholder="e.g. 4×6–8"></div>
+      <div class="cust-field"><label class="cust-field-lbl">Alternative Exercise</label><input class="cust-inp" id="cust-alt-inp" type="text" placeholder="e.g. Push-ups"></div>
     </div>
     <div class="cust-modal-footer">
       <button class="cust-reset-btn" onclick="resetCustomizeModal()">🔄 Reset to Original</button>
@@ -404,37 +391,19 @@
   </div>
 </div>
 
-<!-- ── NUTRITION CUSTOMIZE MODAL ── -->
+<!-- NUTRITION CUSTOMIZE MODAL -->
 <div class="cust-modal-overlay" id="nutr-cust-modal" onclick="if(event.target===this)closeNutrCustomizeModal()">
   <div class="cust-modal-box">
     <div class="cust-modal-hd">
-      <div>
-        <div class="cust-modal-title" id="nutr-cust-modal-title">Edit Meal Item</div>
-        <div class="cust-modal-day" id="nutr-cust-modal-day"></div>
-      </div>
+      <div><div class="cust-modal-title" id="nutr-cust-modal-title">Edit Meal Item</div><div class="cust-modal-day" id="nutr-cust-modal-day"></div></div>
       <button class="cust-modal-close" onclick="closeNutrCustomizeModal()">✕</button>
     </div>
     <div class="cust-modal-body">
-      <div class="cust-field">
-        <label class="cust-field-lbl">Item Name</label>
-        <input class="cust-inp" id="nutr-cust-name-inp" type="text" placeholder="e.g. 2 Rotis">
-      </div>
-      <div class="cust-field">
-        <label class="cust-field-lbl">Calories (kcal)</label>
-        <input class="cust-inp" id="nutr-cust-cal-inp" type="number" min="0" max="9999" placeholder="e.g. 160">
-      </div>
-      <div class="cust-field">
-        <label class="cust-field-lbl">Protein (g)</label>
-        <input class="cust-inp" id="nutr-cust-protein-inp" type="number" min="0" max="999" step="0.5" placeholder="e.g. 6">
-      </div>
-      <div class="cust-field">
-        <label class="cust-field-lbl">Carbs (g)</label>
-        <input class="cust-inp" id="nutr-cust-carbs-inp" type="number" min="0" max="999" step="0.5" placeholder="e.g. 30">
-      </div>
-      <div class="cust-field">
-        <label class="cust-field-lbl">Fat (g)</label>
-        <input class="cust-inp" id="nutr-cust-fat-inp" type="number" min="0" max="999" step="0.5" placeholder="e.g. 2">
-      </div>
+      <div class="cust-field"><label class="cust-field-lbl">Item Name</label><input class="cust-inp" id="nutr-cust-name-inp" type="text" placeholder="e.g. 2 Rotis"></div>
+      <div class="cust-field"><label class="cust-field-lbl">Calories (kcal)</label><input class="cust-inp" id="nutr-cust-cal-inp" type="number" min="0" max="9999" placeholder="e.g. 160"></div>
+      <div class="cust-field"><label class="cust-field-lbl">Protein (g)</label><input class="cust-inp" id="nutr-cust-protein-inp" type="number" min="0" max="999" step="0.5" placeholder="e.g. 6"></div>
+      <div class="cust-field"><label class="cust-field-lbl">Carbs (g)</label><input class="cust-inp" id="nutr-cust-carbs-inp" type="number" min="0" max="999" step="0.5" placeholder="e.g. 30"></div>
+      <div class="cust-field"><label class="cust-field-lbl">Fat (g)</label><input class="cust-inp" id="nutr-cust-fat-inp" type="number" min="0" max="999" step="0.5" placeholder="e.g. 2"></div>
     </div>
     <div class="cust-modal-footer">
       <button class="cust-reset-btn" onclick="resetNutrCustomizeModal()">🔄 Reset to Original</button>
@@ -443,7 +412,107 @@
   </div>
 </div>
 
-<!-- ── TIMER FAB ── -->
+<!-- EXERCISE DETAIL MODAL -->
+<div class="ex-modal-overlay" id="ex-modal" onclick="if(event.target===this)closeExModal()">
+  <div class="ex-modal-box">
+    <!-- Header -->
+    <div class="ex-modal-hd" id="ex-modal-hd">
+      <div class="ex-modal-hd-left">
+        <div class="ex-modal-name" id="ex-modal-name">Exercise</div>
+        <div class="ex-modal-muscles" id="ex-modal-muscles"></div>
+      </div>
+      <button class="ex-modal-close" onclick="closeExModal()">✕</button>
+    </div>
+
+    <!-- Body scrollable -->
+    <div class="ex-modal-body" id="ex-modal-body">
+
+      <!-- Exercise GIF -->
+      <div class="ex-modal-img-wrap" id="ex-modal-img-wrap"></div>
+
+      <!-- Form Cues -->
+      <div class="ex-modal-section" id="ex-modal-cues-section">
+        <div class="ex-modal-section-title">⚡ Form Cues</div>
+        <div class="ex-modal-cues-list" id="ex-modal-cues"></div>
+      </div>
+
+      <!-- Common mistakes -->
+      <div class="ex-modal-section" id="ex-modal-mistakes-section">
+        <div class="ex-modal-section-title">⚠️ Common Mistakes</div>
+        <div class="ex-modal-mistake-txt" id="ex-modal-mistakes"></div>
+      </div>
+
+      <!-- Breathing & Tempo -->
+      <div class="ex-modal-chips" id="ex-modal-chips"></div>
+
+      <!-- CARDIO SECTION (shown only for cardio) -->
+      <div id="ex-modal-cardio-section" style="display:none">
+        <div class="ex-modal-section">
+          <div class="ex-modal-section-title">ℹ️ How to do it</div>
+          <div class="ex-modal-cardio-tip" id="ex-modal-cardio-tip"></div>
+          <div class="ex-modal-cardio-zone" id="ex-modal-cardio-zone"></div>
+        </div>
+        <!-- Cardio timer -->
+        <div class="ex-modal-section">
+          <div class="ex-modal-section-title">⏱ Cardio Timer</div>
+          <div class="ex-cardio-timer">
+            <div class="ex-cardio-timer-display" id="ex-cardio-display">20:00</div>
+            <div class="ex-cardio-presets">
+              <button class="ex-cardio-preset" onclick="setCardioTime(900)">15 min</button>
+              <button class="ex-cardio-preset active" onclick="setCardioTime(1200)">20 min</button>
+              <button class="ex-cardio-preset" onclick="setCardioTime(1500)">25 min</button>
+              <button class="ex-cardio-preset" onclick="setCardioTime(1800)">30 min</button>
+            </div>
+            <div class="ex-cardio-btns">
+              <button class="ex-cardio-btn primary" id="ex-cardio-start" onclick="cardioTimerToggle()">▶ Start</button>
+              <button class="ex-cardio-btn secondary" onclick="cardioTimerReset()">Reset</button>
+            </div>
+          </div>
+        </div>
+        <!-- Cardio done button -->
+        <button class="ex-modal-done-btn" id="ex-modal-cardio-done" onclick="markExDoneFromModal()">✓ Mark as Done</button>
+      </div>
+
+      <!-- WEIGHT TRAINING SECTION (shown only for weighted exercises) -->
+      <div id="ex-modal-weight-section" style="display:none">
+        <div class="ex-modal-section">
+          <div class="ex-modal-section-title">📊 Log Your Sets</div>
+          <div class="ex-modal-sets-grid" id="ex-modal-sets-grid"></div>
+        </div>
+
+        <!-- Feedback panel -->
+        <div class="ex-modal-feedback" id="ex-modal-feedback" style="display:none">
+          <div class="ex-modal-feedback-icon" id="ex-modal-feedback-icon">💪</div>
+          <div class="ex-modal-feedback-txt" id="ex-modal-feedback-txt"></div>
+        </div>
+
+        <!-- Weekly progress mini chart -->
+        <div class="ex-modal-section" id="ex-modal-progress-section">
+          <div class="ex-modal-section-title">📈 Your Week-by-Week Progress</div>
+          <div id="ex-modal-progress-chart"></div>
+        </div>
+
+        <!-- Done button -->
+        <button class="ex-modal-done-btn" id="ex-modal-done-btn" onclick="markExDoneFromModal()">✓ Mark as Done</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- WORKOUT COMPLETE POPUP -->
+<div class="workout-popup-overlay" id="workout-popup" onclick="if(event.target===this)closeWorkoutPopup()">
+  <div class="workout-popup-box">
+    <div class="workout-popup-confetti" id="popup-confetti"></div>
+    <div class="workout-popup-emoji" id="workout-popup-emoji">🎉</div>
+    <div class="workout-popup-title" id="workout-popup-title">Day Complete!</div>
+    <div class="workout-popup-sub" id="workout-popup-sub">You crushed it!</div>
+    <div class="workout-popup-stats" id="workout-popup-stats"></div>
+    <button class="workout-popup-btn" onclick="closeWorkoutPopup()">Let's Go! 💪</button>
+  </div>
+</div>
+
+<!-- TIMER FAB -->
 <div class="timer-fab" id="timer-fab">
   <div class="timer-panel" id="timer-panel">
     <div class="hiit-status" id="hiit-status" style="display:none"></div>
@@ -463,7 +532,7 @@
   <button class="timer-toggle-btn" onclick="toggleTimer()" title="Timer">⏱</button>
 </div>
 
-<!-- ── TOAST ── -->
+<!-- TOAST -->
 <div class="toast" id="toast">
   <div class="toast-icon" id="toast-icon">🎉</div>
   <div class="toast-msg" id="toast-msg"></div>

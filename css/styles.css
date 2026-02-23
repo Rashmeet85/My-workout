@@ -3661,3 +3661,808 @@ button, a, [role="button"] {
   transition: border-color 0.2s, color 0.2s; flex-shrink: 0;
 }
 .nutr-cust-edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ═══════════════════════════════════════════════════
+   NEW ADDITIONS v2
+   ═══════════════════════════════════════════════════ */
+
+/* ── HAMBURGER / HIDDEN NAV ITEMS ── */
+.nav-hamburger {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 4px;
+  transition: all 0.15s;
+}
+.nav-hamburger:hover { background: var(--surface2); color: var(--text); }
+.nav-hidden { display: none !important; }
+
+/* ── SIDE DRAWER ── */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  backdrop-filter: blur(4px);
+}
+.drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+.side-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 280px;
+  max-width: 85vw;
+  background: var(--surface);
+  border-right: 1px solid var(--border2);
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  overflow-y: auto;
+}
+.side-drawer.open { transform: translateX(0); }
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 18px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-logo {
+  font-family: 'Bebas Neue';
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--accent);
+}
+.drawer-logo span { color: var(--text2); font-size: 14px; }
+.drawer-close {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drawer-streak {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--orange);
+  background: rgba(255,112,67,0.08);
+  border-bottom: 1px solid var(--border);
+}
+
+.drawer-nav {
+  flex: 1;
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.drawer-btn {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-family: 'Plus Jakarta Sans';
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 14px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  width: 100%;
+}
+.drawer-btn:hover { background: var(--surface2); color: var(--text); }
+.drawer-btn.active { background: var(--accent-dim); color: var(--accent); }
+
+.drawer-footer {
+  padding: 14px 14px 24px;
+  border-top: 1px solid var(--border);
+}
+.drawer-theme-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: 'Plus Jakarta Sans';
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+/* ── WORKOUT COMPLETE POPUP ── */
+.workout-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  backdrop-filter: blur(6px);
+}
+.workout-popup-overlay.open { opacity: 1; pointer-events: all; }
+
+.workout-popup-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 36px 28px 28px;
+  max-width: 340px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: popupBounce 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  transform: scale(0.8);
+}
+@keyframes popupBounce {
+  to { transform: scale(1); }
+}
+.workout-popup-confetti {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confettiFall 2s ease-in forwards;
+  top: -10px;
+}
+@keyframes confettiFall {
+  to { transform: translateY(400px) rotate(720deg); opacity: 0; }
+}
+
+.workout-popup-emoji {
+  font-size: 56px;
+  margin-bottom: 12px;
+  display: block;
+  animation: emojiPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+}
+@keyframes emojiPop {
+  from { transform: scale(0) rotate(-20deg); }
+  to { transform: scale(1) rotate(0deg); }
+}
+.workout-popup-title {
+  font-family: 'Bebas Neue';
+  font-size: 32px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.workout-popup-sub {
+  font-size: 14px;
+  color: var(--text2);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.workout-popup-stats {
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--text2);
+  text-align: left;
+}
+.workout-popup-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+.workout-popup-stat-row strong { color: var(--text); }
+.workout-popup-btn {
+  background: var(--accent);
+  border: none;
+  color: var(--accent-text);
+  font-family: 'Plus Jakarta Sans';
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.15s;
+}
+.workout-popup-btn:hover { opacity: 0.88; }
+
+/* ── PROGRESS BADGE (week weight trend) ── */
+.ex-progress-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  margin-top: 4px;
+}
+.ex-progress-badge.up { background: rgba(52,211,153,0.15); color: #34d399; }
+.ex-progress-badge.down { background: rgba(248,113,113,0.15); color: #f87171; }
+.ex-progress-badge.same { background: rgba(96,165,250,0.15); color: #60a5fa; }
+.ex-progress-badge.pr { background: rgba(251,191,36,0.18); color: #fbbf24; }
+
+/* ── SET INPUT — per-set PR badge ── */
+.set-pr-badge {
+  font-size: 9px;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ── BMI PAGE ── */
+.bmi-wrap { max-width: 600px; margin: 0 auto; padding: 20px 16px 100px; }
+.bmi-header { margin-bottom: 20px; }
+.bmi-header h2 { font-family: 'Bebas Neue'; font-size: 28px; letter-spacing: 2px; color: var(--accent); }
+.bmi-header p { color: var(--text2); font-size: 13px; margin-top: 4px; }
+
+.bmi-input-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.bmi-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.bmi-field { display: flex; flex-direction: column; gap: 5px; }
+.bmi-field-wide { grid-column: span 2; }
+.bmi-lbl { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text2); }
+.bmi-inp {
+  background: var(--input-bg);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans';
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.bmi-inp:focus { border-color: var(--accent); }
+.bmi-calc-btn {
+  background: var(--accent);
+  border: none;
+  color: var(--accent-text);
+  font-family: 'Plus Jakarta Sans';
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.15s;
+}
+.bmi-calc-btn:hover { opacity: 0.88; }
+
+.bmi-result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 14px;
+}
+.bmi-result-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 16px;
+}
+
+/* BMI Gauge */
+.bmi-gauge-wrap { margin-bottom: 16px; }
+.bmi-gauge-bar {
+  height: 18px;
+  border-radius: 10px;
+  display: flex;
+  overflow: visible;
+  position: relative;
+  margin-bottom: 8px;
+  gap: 2px;
+}
+.bmi-gauge-segment { border-radius: 4px; height: 18px; }
+.bmi-gauge-marker {
+  position: absolute;
+  top: -6px;
+  width: 4px;
+  height: 30px;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  transform: translateX(-50%);
+  transition: left 0.6s cubic-bezier(0.4,0,0.2,1);
+  left: 0%;
+}
+.bmi-gauge-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text2);
+  text-align: center;
+  gap: 2px;
+}
+.bmi-gauge-labels span { flex: 1; }
+
+.bmi-big-num {
+  font-family: 'Bebas Neue';
+  font-size: 56px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-align: center;
+  line-height: 1;
+}
+.bmi-category {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+  margin: 4px 0;
+}
+.bmi-ideal-range {
+  font-size: 12px;
+  color: var(--text2);
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Calorie grid */
+.bmi-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.bmi-cal-item {
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.bmi-cal-goal-item { border: 1px solid var(--accent); background: var(--accent-dim); }
+.bmi-cal-icon { font-size: 22px; margin-bottom: 6px; }
+.bmi-cal-val { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.bmi-cal-lbl { font-size: 11px; color: var(--text2); line-height: 1.4; }
+.bmi-cal-lbl small { font-size: 10px; }
+
+/* Macro grid */
+.bmi-macro-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.bmi-macro-item { background: var(--surface2); border-radius: 12px; padding: 14px 10px; text-align: center; }
+.bmi-macro-val { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.bmi-macro-lbl { font-size: 11px; color: var(--text2); }
+
+.bmi-apply-btn {
+  display: block;
+  width: 100%;
+  background: var(--accent);
+  border: none;
+  color: var(--accent-text);
+  font-family: 'Plus Jakarta Sans';
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 4px;
+  margin-bottom: 80px;
+}
+
+/* BMI nutrition status banner */
+.bmi-nutr-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.bmi-nutr-status-banner.over { border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.08); color: #f87171; }
+.bmi-nutr-status-banner.under { border-color: rgba(96,165,250,0.4); background: rgba(96,165,250,0.08); color: #60a5fa; }
+.bmi-nutr-status-banner.ok { border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.08); color: #34d399; }
+
+/* today nutr status in BMI page */
+.bmi-nutr-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.bmi-nutr-row:last-child { border-bottom: none; }
+.bmi-nutr-row strong { color: var(--text); }
+
+
+/* ═══════════════════════════════════════════════════
+   EXERCISE DETAIL MODAL
+   ═══════════════════════════════════════════════════ */
+
+.ex-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 800;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  backdrop-filter: blur(6px);
+}
+.ex-modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.ex-modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 560px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  overflow: hidden;
+}
+.ex-modal-overlay.open .ex-modal-box {
+  transform: translateY(0);
+}
+
+/* Drag handle */
+.ex-modal-box::before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
+.ex-modal-hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.ex-modal-hd-left { flex: 1; min-width: 0; }
+.ex-modal-name {
+  font-family: 'Bebas Neue';
+  font-size: 22px;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  line-height: 1.1;
+  margin-bottom: 3px;
+}
+.ex-modal-muscles {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  letter-spacing: 0.5px;
+}
+.ex-modal-close {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.ex-modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 16px 20px 32px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ex-modal-img-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.ex-modal-img-wrap img {
+  width: 160px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--border2);
+}
+
+.ex-modal-section {
+  margin-bottom: 18px;
+}
+.ex-modal-section-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 10px;
+}
+
+.ex-modal-cues-list { display: flex; flex-direction: column; gap: 7px; }
+.ex-modal-cue {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.45;
+}
+.ex-modal-cue-num {
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ex-modal-mistake-txt {
+  background: rgba(248,113,113,0.08);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 13px;
+  color: #f87171;
+  line-height: 1.5;
+}
+
+.ex-modal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.ex-modal-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.ex-modal-chip strong { color: var(--text); }
+
+/* Cardio specific */
+.ex-modal-cardio-tip {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.ex-modal-cardio-zone {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--accent-dim);
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: inline-block;
+}
+
+.ex-cardio-timer {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+}
+.ex-cardio-timer-display {
+  font-family: 'Bebas Neue';
+  font-size: 52px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 12px;
+  transition: color 0.3s;
+}
+.ex-cardio-timer-display.running { color: #34d399; }
+.ex-cardio-timer-display.expired { color: #f87171; }
+.ex-cardio-presets {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.ex-cardio-preset {
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: 'Plus Jakarta Sans';
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ex-cardio-preset.active,
+.ex-cardio-preset:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+.ex-cardio-btns { display: flex; gap: 8px; justify-content: center; }
+.ex-cardio-btn {
+  font-family: 'Plus Jakarta Sans';
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s;
+}
+.ex-cardio-btn.primary { background: var(--accent); color: var(--accent-text); }
+.ex-cardio-btn.secondary { background: var(--surface3); color: var(--text2); border: 1px solid var(--border2); }
+.ex-cardio-btn:hover { opacity: 0.85; }
+
+/* Sets grid */
+.ex-modal-sets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.ex-modal-set-card {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 12px 13px;
+  transition: border-color 0.2s;
+}
+.ex-modal-set-card.has-value { border-color: var(--accent); }
+.ex-modal-set-card.is-pr { border-color: #fbbf24; background: rgba(251,191,36,0.06); }
+.ex-modal-set-lbl {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ex-modal-set-pr-tag {
+  font-size: 9px;
+  font-weight: 800;
+  color: #fbbf24;
+  letter-spacing: 0.5px;
+}
+.ex-modal-set-inp {
+  width: 100%;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans';
+  font-size: 18px;
+  font-weight: 700;
+  padding: 8px 10px;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.ex-modal-set-inp:focus { border-color: var(--accent); }
+.ex-modal-set-prev {
+  font-size: 11px;
+  color: var(--text2);
+  text-align: center;
+  margin-top: 5px;
+}
+.ex-modal-set-prev span { color: var(--blue); font-weight: 600; }
+
+/* Feedback panel */
+.ex-modal-feedback {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 12px 0;
+  border-left: 3px solid var(--accent);
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+.ex-modal-feedback.up { border-color: #34d399; }
+.ex-modal-feedback.down { border-color: #f87171; }
+.ex-modal-feedback.pr { border-color: #fbbf24; }
+.ex-modal-feedback.same { border-color: #60a5fa; }
+.ex-modal-feedback-icon { font-size: 22px; flex-shrink: 0; }
+
+/* Progress chart */
+#ex-modal-progress-chart {
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 12px;
+  overflow-x: auto;
+}
+#ex-modal-progress-chart svg { display: block; }
+
+.ex-modal-done-btn {
+  display: block;
+  width: 100%;
+  background: var(--accent);
+  border: none;
+  color: var(--accent-text);
+  font-family: 'Plus Jakarta Sans';
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: opacity 0.15s;
+}
+.ex-modal-done-btn:hover { opacity: 0.88; }
+.ex-modal-done-btn.done-state {
+  background: #34d399;
+  color: #000;
+}
+

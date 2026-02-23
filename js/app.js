@@ -68,12 +68,26 @@ function getTotalExDone() {
 }
 
 function getStreak() {
-  let last = 0;
-  for (let w = 1; w <= 12; w++) if (getWeekProgress(w).complete) last = w;
-  if (last === 0) return 0;
-  let s = 0;
-  for (let w = last; w >= 1; w--) { if (getWeekProgress(w).complete) s++; else break; }
-  return s;
+  // Day-based streak: counts consecutive days (ISO dates) where any exercise was logged
+  const workedDates = getCalDates();
+  if (workedDates.length === 0) return 0;
+  const sorted = [...workedDates].sort().reverse(); // most recent first
+  let streak = 0;
+  let checkDate = new Date();
+  checkDate.setHours(0,0,0,0);
+  // Allow today or yesterday as start of streak
+  const todayISO2 = checkDate.toISOString().slice(0,10);
+  const yday = new Date(checkDate); yday.setDate(yday.getDate()-1);
+  const ydayISO = yday.toISOString().slice(0,10);
+  if (!sorted.includes(todayISO2) && !sorted.includes(ydayISO)) return 0;
+  // Walk back from most recent date
+  let cur = sorted.includes(todayISO2) ? new Date(checkDate) : new Date(yday);
+  while (true) {
+    const iso = cur.toISOString().slice(0,10);
+    if (sorted.includes(iso)) { streak++; cur.setDate(cur.getDate()-1); }
+    else break;
+  }
+  return streak;
 }
 
 /* ── WEIGHT STORAGE ── */
@@ -269,7 +283,10 @@ function updateStats() {
   document.getElementById('stat-pct').textContent        = gPct + '%';
   document.getElementById('prog-pct-big').textContent    = gPct + '%';
   document.getElementById('prog-fill').style.width       = gPct + '%';
-  document.getElementById('streak-num').textContent      = getStreak();
+  const s = getStreak();
+  document.getElementById('streak-num').textContent      = s;
+  const dsn = document.getElementById('drawer-streak-num');
+  if (dsn) dsn.textContent = s;
   document.getElementById('prog-sub').textContent =
     gPct === 0   ? 'Just getting started' :
     gPct < 25    ? 'Early days — stay consistent!' :
@@ -497,6 +514,18 @@ function renderWeekPage(week) {
         for (let s = 0; s < Math.min(ex.numSets, 4); s++) {
           const curVal  = getExWeight(week, dayIdx, exIdx, s);
           const prevVal = week > 1 ? getExWeight(week - 1, dayIdx, exIdx, s) : '';
+          // Determine if current value is a PR vs all previous weeks
+          let isPRSet = false;
+          if (curVal) {
+            const cv = parseFloat(curVal);
+            let prevMax = 0;
+            for (let w2 = 1; w2 <= 12; w2++) {
+              if (w2 === week) continue;
+              const pv2 = parseFloat(getExWeight(w2, dayIdx, exIdx, s));
+              if (!isNaN(pv2) && pv2 > prevMax) prevMax = pv2;
+            }
+            if (!isNaN(cv) && cv > prevMax && prevMax > 0) isPRSet = true;
+          }
           setsHtml += `
             <div class="set-input-wrap">
               <div class="set-lbl">Set ${s + 1}</div>
@@ -505,6 +534,7 @@ function renderWeekPage(week) {
                 data-week="${week}" data-day="${dayIdx}" data-ex="${exIdx}" data-set="${s}"
                 oninput="onSetWeightChange(this)">
               <div class="set-prev-hint">${prevVal ? 'Prev: ' + prevVal : '—'}</div>
+              <div class="set-pr-badge" id="set-pr-${dayIdx}-${exIdx}-${s}">${isPRSet ? '🔥 PR!' : ''}</div>
             </div>`;
         }
         setsHtml += '</div>';
@@ -519,15 +549,21 @@ function renderWeekPage(week) {
       const displayAlt  = customEx ? (customEx.alt || ex.alt || '') : (ex.alt || '');
       const altHtml = displayAlt ? `<div class="ex-alt">Alt: ${esc(displayAlt)}</div>` : '';
       row.innerHTML = `
-        <div class="ex-main" onclick="toggleEx(${week},${dayIdx},${exIdx})">
-          <div class="ex-cb"><svg viewBox="0 0 12 10"><polyline points="1 5 4.5 9 11 1"/></svg></div>
+        <div class="ex-main">
+          <div class="ex-cb" onclick="toggleEx(${week},${dayIdx},${exIdx})"><svg viewBox="0 0 12 10"><polyline points="1 5 4.5 9 11 1"/></svg></div>
           ${imgHtml}
-          <div class="ex-name-wrap"><div class="ex-nm${ex.cardio ? ' cardio' : ''}">${esc(displayName)}</div>${altHtml}</div>
+          <div class="ex-name-wrap" onclick="openExModal(${week},${dayIdx},${exIdx})" style="cursor:pointer;flex:1">
+            <div class="ex-nm${ex.cardio ? ' cardio' : ''}">${esc(displayName)} <span style="font-size:10px;color:var(--accent);font-weight:700;opacity:0.7">›</span></div>
+            ${altHtml}
+            <div id="ex-prog-badge-${dayIdx}-${exIdx}"></div>
+          </div>
           <div class="ex-sets-lbl">${esc(displaySets)}</div>
-          ${hasWeightInputs ? `<button class="ex-expand-btn" onclick="event.stopPropagation();toggleSetInputs('si-${dayIdx}-${exIdx}')" title="Log weights">📊</button>` : ''}
+          ${hasWeightInputs ? `<button class="ex-expand-btn" onclick="event.stopPropagation();openExModal(${week},${dayIdx},${exIdx})" title="Log weights">📊</button>` : ''}
         </div>
         ${setsHtml}`;
       list.appendChild(row);
+      // Initialize progress badge for this exercise
+      setTimeout(() => updateExerciseProgressBadge(week, dayIdx, exIdx), 0);
     });
   });
 }
@@ -557,10 +593,15 @@ function toggleSetInputs(id) {
 function onSetWeightChange(inp) {
   const week = +inp.dataset.week, dayIdx = +inp.dataset.day, exIdx = +inp.dataset.ex, setNum = +inp.dataset.set;
   setExWeight(week, dayIdx, exIdx, setNum, inp.value);
+  // Update per-set PR badge inline
+  refreshSetPRBadge(inp, week, dayIdx, exIdx, setNum, parseFloat(inp.value));
+  // Update overall exercise progress badge
+  updateExerciseProgressBadge(week, dayIdx, exIdx);
 }
 
 function toggleEx(week, dayIdx, exIdx) {
   const wasComp = getWeekProgress(week).complete;
+  const wasDayComp = isDayComplete(week, dayIdx);
   const val     = !isChecked(week, dayIdx, exIdx);
   setChecked(week, dayIdx, exIdx, val);
   if (val) markTodayWorkedPartial();
@@ -571,6 +612,12 @@ function toggleEx(week, dayIdx, exIdx) {
   const banner = document.getElementById('comp-banner');
   if (banner) prog.complete ? banner.classList.add('show') : banner.classList.remove('show');
   if (!wasComp && prog.complete) showToast('🏆', `Week ${week} COMPLETE! Trophy earned! 🎉`);
+  // Day complete popup
+  if (val && !wasDayComp && isDayComplete(week, dayIdx)) {
+    showWorkoutPopup(week, dayIdx);
+  }
+  // Auto-PR check per set (done in setExWeight)
+  updateExerciseProgressBadge(week, dayIdx, exIdx);
 }
 
 function checkAllDay(week, dayIdx) {
@@ -904,11 +951,12 @@ function showToast(icon, msg) {
 function showPage(page, pushState = true) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.drawer-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('timer-fab').style.display = 'flex';
 
   const pageMap = {
-    home:      () => { renderHome(); document.getElementById('nav-week').style.display = 'none'; },
-    week:      () => { renderWeekPage(currentWeekPage); document.getElementById('nav-week').style.display = 'flex'; },
+    home:      () => { renderHome(); },
+    week:      () => { renderWeekPage(currentWeekPage); },
     warmup:    () => renderWarmupPage(),
     hiit:      () => renderHIITPage(),
     goals:     () => renderGoals(),
@@ -916,13 +964,22 @@ function showPage(page, pushState = true) {
     vol:       () => renderVolPage(),
     cal:       () => renderCalendar(),
     nutr:      () => renderNutrPage(),
+    bmi:       () => renderBMIPage(),
     customize: () => renderCustomizePage(),
   };
 
+  // Handle week nav visibility
+  const weekNavEl = document.getElementById('nav-week');
+  if (weekNavEl) weekNavEl.style.display = page === 'week' ? 'flex' : 'none';
+  const weekDrawerEl = document.getElementById('dnav-week');
+  if (weekDrawerEl) weekDrawerEl.style.display = page === 'week' ? 'flex' : 'none';
+
   const pageEl  = document.getElementById(`page-${page}`);
   const navEl   = document.getElementById(`nav-${page}`);
+  const dnavEl  = document.getElementById(`dnav-${page}`);
   if (pageEl) pageEl.classList.add('active');
   if (navEl)  navEl.classList.add('active');
+  if (dnavEl) dnavEl.classList.add('active');
   if (pageMap[page]) pageMap[page]();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1021,6 +1078,15 @@ function renderNutrPage() {
   const water  = getWater();
 
   document.getElementById('cal-goal-inp').value = goal;
+
+  // Update BMI nutrition status banner if BMI data exists
+  const bmiRes = lsj('gym_bmi_results');
+  if (bmiRes) {
+    renderBMITodayNutr(bmiRes.target, totals.cal);
+  } else {
+    const banner = document.getElementById('bmi-nutr-status');
+    if (banner) banner.innerHTML = `<div class="bmi-nutr-status-banner"><span>⚖️ <button style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:11px" onclick="showPage('bmi')">Set up BMI & Calories</button> to see calorie targets here</span></div>`;
+  }
 
   // Ring
   const pct  = Math.min(1, totals.cal / goal);
@@ -1822,6 +1888,592 @@ function resetNutrCustomizeModal() {
 function closeNutrCustomizeModal() {
   document.getElementById('nutr-cust-modal').classList.remove('open');
   nutrCustEditState = null;
+}
+
+/* ── DRAWER ── */
+function openDrawer() {
+  document.getElementById('side-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  // sync streak in drawer
+  const s = getStreak();
+  const dsn = document.getElementById('drawer-streak-num');
+  if (dsn) dsn.textContent = s;
+}
+function closeDrawer() {
+  document.getElementById('side-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+/* ── DAY COMPLETE HELPERS ── */
+function isDayComplete(week, dayIdx) {
+  return DAYS[dayIdx].exercises.every((_, ei) => isChecked(week, dayIdx, ei));
+}
+
+/* ── WORKOUT COMPLETE POPUP ── */
+const WORKOUT_MSGS = [
+  { emoji: '🔥', title: 'On Fire!', sub: 'You absolutely smashed it today. Rest up, grow bigger!' },
+  { emoji: '💪', title: 'Beast Mode!', sub: "Every rep counts. You're building something incredible." },
+  { emoji: '🏆', title: 'Champion!', sub: 'That dedication is what separates the best from the rest.' },
+  { emoji: '⚡', title: 'Electrifying!', sub: 'Pure energy. Pure effort. Pure results incoming!' },
+  { emoji: '🚀', title: 'Launched!', sub: "Another day checked off. You're unstoppable!" },
+  { emoji: '🎯', title: 'Dead On Target!', sub: 'Zero excuses. 100% commitment. That\'s YOU.' },
+  { emoji: '💥', title: 'BOOM!', sub: 'That workout just happened. Recovery starts now — eat, sleep, grow.' },
+  { emoji: '🦁', title: 'King of the Gym!', sub: 'They all watched. They all knew. The beast is here.' },
+];
+
+function showWorkoutPopup(week, dayIdx) {
+  const msg = WORKOUT_MSGS[Math.floor(Math.random() * WORKOUT_MSGS.length)];
+  const dayData = DAYS[dayIdx];
+  const exDone = dayData.exercises.filter((_, ei) => isChecked(week, dayIdx, ei)).length;
+
+  document.getElementById('workout-popup-emoji').textContent = msg.emoji;
+  document.getElementById('workout-popup-title').textContent = msg.title;
+  document.getElementById('workout-popup-sub').textContent = msg.sub;
+
+  document.getElementById('workout-popup-stats').innerHTML = `
+    <div class="workout-popup-stat-row"><span>${dayData.day} — ${dayData.focus}</span></div>
+    <div class="workout-popup-stat-row"><span>Exercises Completed</span><strong>${exDone} / ${dayData.exercises.length}</strong></div>
+    <div class="workout-popup-stat-row"><span>Week</span><strong>${week} / 12</strong></div>
+    <div class="workout-popup-stat-row"><span>Day Streak</span><strong>🔥 ${getStreak()} days</strong></div>`;
+
+  // Spawn confetti
+  const conf = document.getElementById('popup-confetti');
+  if (conf) {
+    conf.innerHTML = '';
+    const colors = ['#c8ff00','#34d399','#60a5fa','#fbbf24','#f87171','#a78bfa'];
+    for (let i = 0; i < 30; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.cssText = `left:${Math.random()*100}%;background:${colors[i%colors.length]};animation-delay:${Math.random()*0.8}s;animation-duration:${1.5+Math.random()*1}s;transform:rotate(${Math.random()*360}deg)`;
+      conf.appendChild(p);
+    }
+  }
+
+  document.getElementById('workout-popup').classList.add('open');
+  // Mark today as worked
+  markTodayWorked();
+  updateStats();
+}
+
+function closeWorkoutPopup() {
+  document.getElementById('workout-popup').classList.remove('open');
+}
+
+/* ── EXERCISE WEIGHT PROGRESS BADGE ── */
+function getExAvgWeight(week, dayIdx, exIdx) {
+  const ex = DAYS[dayIdx]?.exercises[exIdx];
+  if (!ex || ex.cardio || !ex.numSets) return null;
+  let total = 0, count = 0;
+  for (let s = 0; s < Math.min(ex.numSets, 4); s++) {
+    const v = parseFloat(getExWeight(week, dayIdx, exIdx, s));
+    if (!isNaN(v) && v > 0) { total += v; count++; }
+  }
+  return count > 0 ? total / count : null;
+}
+
+function getExSetPR(dayIdx, exIdx, setNum) {
+  // highest single weight ever entered for this exercise's set across all weeks
+  let max = 0;
+  for (let w = 1; w <= 12; w++) {
+    const v = parseFloat(getExWeight(w, dayIdx, exIdx, setNum));
+    if (!isNaN(v) && v > max) max = v;
+  }
+  return max > 0 ? max : null;
+}
+
+function updateExerciseProgressBadge(week, dayIdx, exIdx) {
+  const badgeEl = document.getElementById(`ex-prog-badge-${dayIdx}-${exIdx}`);
+  if (!badgeEl) return;
+  const curAvg  = getExAvgWeight(week, dayIdx, exIdx);
+  const prevAvg = week > 1 ? getExAvgWeight(week - 1, dayIdx, exIdx) : null;
+  if (curAvg === null) { badgeEl.innerHTML = ''; return; }
+
+  // Check if any set is a new all-time PR for this exercise
+  const ex = DAYS[dayIdx]?.exercises[exIdx];
+  let isPR = false;
+  if (ex && !ex.cardio) {
+    for (let s = 0; s < Math.min(ex.numSets, 4); s++) {
+      const curVal = parseFloat(getExWeight(week, dayIdx, exIdx, s));
+      if (isNaN(curVal) || curVal <= 0) continue;
+      let prevMax = 0;
+      for (let w2 = 1; w2 <= 12; w2++) {
+        if (w2 === week) continue;
+        const pv = parseFloat(getExWeight(w2, dayIdx, exIdx, s));
+        if (!isNaN(pv) && pv > prevMax) prevMax = pv;
+      }
+      if (curVal > prevMax && prevMax > 0) { isPR = true; break; }
+    }
+  }
+
+  if (isPR) {
+    badgeEl.innerHTML = `<span class="ex-progress-badge pr">🔥 NEW PR</span>`;
+  } else if (prevAvg !== null) {
+    const diff = +(curAvg - prevAvg).toFixed(1);
+    if (diff > 0) badgeEl.innerHTML = `<span class="ex-progress-badge up">▲ +${diff}${currentUnit} vs Wk${week-1}</span>`;
+    else if (diff < 0) badgeEl.innerHTML = `<span class="ex-progress-badge down">▼ ${diff}${currentUnit} vs Wk${week-1}</span>`;
+    else badgeEl.innerHTML = `<span class="ex-progress-badge same">= Same as Wk${week-1}</span>`;
+  } else {
+    badgeEl.innerHTML = '';
+  }
+}
+
+function refreshSetPRBadge(inp, week, dayIdx, exIdx, setNum, curVal) {
+  const badgeId = `set-pr-${dayIdx}-${exIdx}-${setNum}`;
+  const el = document.getElementById(badgeId);
+  if (!el || isNaN(curVal) || curVal <= 0) { if(el) el.textContent=''; return; }
+  let prevMax = 0;
+  for (let w2 = 1; w2 <= 12; w2++) {
+    if (w2 === week) continue;
+    const pv = parseFloat(getExWeight(w2, dayIdx, exIdx, setNum));
+    if (!isNaN(pv) && pv > prevMax) prevMax = pv;
+  }
+  if (prevMax > 0 && curVal > prevMax) el.textContent = '🔥 PR!';
+  else el.textContent = '';
+}
+
+/* ── BMI & CALORIES PAGE ── */
+function renderBMIPage() {
+  // Restore saved values
+  const saved = lsj('gym_bmi_inputs') || {};
+  if (saved.height) document.getElementById('bmi-height').value = saved.height;
+  if (saved.weight) document.getElementById('bmi-weight').value = saved.weight;
+  if (saved.age)    document.getElementById('bmi-age').value    = saved.age;
+  if (saved.sex)    document.getElementById('bmi-sex').value    = saved.sex;
+  if (saved.activity) document.getElementById('bmi-activity').value = saved.activity;
+  if (saved.goal)   document.getElementById('bmi-goal').value  = saved.goal;
+  // If we have previous results, show them
+  const prev = lsj('gym_bmi_results');
+  if (prev) renderBMIResults(prev);
+}
+
+function calcBMI() {
+  const h  = parseFloat(document.getElementById('bmi-height').value);
+  const w  = parseFloat(document.getElementById('bmi-weight').value);
+  const a  = parseFloat(document.getElementById('bmi-age').value);
+  const sex = document.getElementById('bmi-sex').value;
+  const act = parseFloat(document.getElementById('bmi-activity').value);
+  const goal = document.getElementById('bmi-goal').value;
+
+  if (!h || !w || !a || isNaN(h) || isNaN(w) || isNaN(a)) {
+    showToast('⚠️', 'Please fill in Height, Weight, and Age.');
+    return;
+  }
+
+  // Save inputs
+  lssj('gym_bmi_inputs', { height: h, weight: w, age: a, sex, activity: act, goal });
+
+  const bmi = +(w / ((h/100)**2)).toFixed(1);
+  // Mifflin-St Jeor BMR
+  const bmr = sex === 'male'
+    ? Math.round(10*w + 6.25*h - 5*a + 5)
+    : Math.round(10*w + 6.25*h - 5*a - 161);
+  const tdee = Math.round(bmr * act);
+  const target = goal === 'cut' ? tdee - 500 : goal === 'bulk' ? tdee + 300 : tdee;
+
+  const results = { bmi, bmr, tdee, target, goal, weight: w, height: h };
+  lssj('gym_bmi_results', results);
+  renderBMIResults(results);
+  showToast('⚖️', `BMI: ${bmi} | Target: ${target} kcal/day`);
+}
+
+function renderBMIResults(r) {
+  const { bmi, bmr, tdee, target, goal, weight, height } = r;
+  document.getElementById('bmi-results').style.display = '';
+
+  // BMI Category
+  let cat, catColor;
+  if (bmi < 18.5) { cat = 'Underweight'; catColor = '#60a5fa'; }
+  else if (bmi < 25) { cat = 'Normal Weight'; catColor = '#34d399'; }
+  else if (bmi < 30) { cat = 'Overweight'; catColor = '#fbbf24'; }
+  else { cat = 'Obese'; catColor = '#f87171'; }
+
+  document.getElementById('bmi-value').textContent = bmi;
+  document.getElementById('bmi-value').style.color = catColor;
+  document.getElementById('bmi-category').textContent = cat;
+  document.getElementById('bmi-category').style.color = catColor;
+
+  // Ideal weight range for normal BMI (18.5–24.9)
+  const hm = height / 100;
+  const idealMin = +(18.5 * hm * hm).toFixed(1);
+  const idealMax = +(24.9 * hm * hm).toFixed(1);
+  document.getElementById('bmi-ideal-range').textContent = `Ideal weight range: ${idealMin}–${idealMax} kg`;
+
+  // Gauge marker position: BMI 10–40 range mapped to 0–100%
+  const pct = Math.min(100, Math.max(0, (bmi - 10) / 30 * 100));
+  document.getElementById('bmi-gauge-marker').style.left = pct + '%';
+
+  // Calories
+  document.getElementById('bmi-bmr').textContent  = bmr + ' kcal';
+  document.getElementById('bmi-tdee').textContent = tdee + ' kcal';
+  document.getElementById('bmi-target').textContent = target + ' kcal';
+  document.getElementById('bmi-target-lbl').textContent =
+    goal === 'cut' ? 'Fat Loss Goal' : goal === 'bulk' ? 'Muscle Gain Goal' : 'Maintain Goal';
+
+  // Calories to burn today = eaten - target (if over), else 0 (no need to burn extra)
+  const eaten = getTodayEaten();
+  const burnNeeded = Math.max(0, eaten - target);
+  document.getElementById('bmi-burn').textContent = burnNeeded > 0
+    ? burnNeeded + ' kcal' : '—';
+
+  // Today's nutrition status
+  renderBMITodayNutr(target, eaten);
+
+  // Macro recommendations
+  const macroEl = document.getElementById('bmi-macro-grid');
+  const protein = Math.round(weight * 1.8); // ~1.8g/kg
+  const fat     = Math.round(target * 0.25 / 9);
+  const carbs   = Math.round((target - protein*4 - fat*9) / 4);
+  macroEl.innerHTML = `
+    <div class="bmi-macro-item"><div class="bmi-macro-val" style="color:#60a5fa">${protein}g</div><div class="bmi-macro-lbl">Protein</div></div>
+    <div class="bmi-macro-item"><div class="bmi-macro-val" style="color:#fbbf24">${Math.max(0,carbs)}g</div><div class="bmi-macro-lbl">Carbs</div></div>
+    <div class="bmi-macro-item"><div class="bmi-macro-val" style="color:#34d399">${fat}g</div><div class="bmi-macro-lbl">Fat</div></div>`;
+}
+
+function getTodayEaten() {
+  const jsDow = new Date().getDay();
+  const dayIdx = jsDow === 0 ? 6 : jsDow - 1;
+  return computeDayNutr(dayIdx).cal;
+}
+
+function renderBMITodayNutr(target, eaten) {
+  const el = document.getElementById('bmi-today-nutr-body');
+  if (!el) return;
+  const diff = eaten - target;
+  const rem  = target - eaten;
+  let statusIcon, statusMsg;
+  if (Math.abs(diff) < 50)      { statusIcon = '✅'; statusMsg = 'On track! Great job.'; }
+  else if (diff > 0)            { statusIcon = '⚠️'; statusMsg = `Over by ${diff} kcal. Consider lighter dinner.`; }
+  else                          { statusIcon = '📉'; statusMsg = `${Math.abs(diff)} kcal remaining today. Eat up!`; }
+
+  el.innerHTML = `
+    <div class="bmi-nutr-row"><span>Daily Target</span><strong>${target} kcal</strong></div>
+    <div class="bmi-nutr-row"><span>Eaten Today</span><strong>${eaten} kcal</strong></div>
+    <div class="bmi-nutr-row"><span>Balance</span><strong style="color:${diff>50?'#f87171':diff<-50?'#60a5fa':'#34d399'}">${diff>=0?'+':''}${diff} kcal</strong></div>
+    <div style="margin-top:10px;font-size:13px;color:var(--text2)">${statusIcon} ${statusMsg}</div>`;
+
+  // Also update the small banner in Nutrition tab
+  const banner = document.getElementById('bmi-nutr-status');
+  if (banner) {
+    const cls = diff > 50 ? 'over' : diff < -50 ? 'under' : 'ok';
+    banner.innerHTML = `<div class="bmi-nutr-status-banner ${cls}">${statusIcon} <span>${statusMsg} <button style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:11px" onclick="showPage('bmi')">See BMI details</button></span></div>`;
+  }
+}
+
+function applyBMICalGoal() {
+  const res = lsj('gym_bmi_results');
+  if (!res) { showToast('⚠️', 'Calculate BMI first!'); return; }
+  ls('nutr_cal_goal', res.target);
+  document.getElementById('cal-goal-inp').value = res.target;
+  showToast('✅', `Nutrition goal set to ${res.target} kcal!`);
+}
+
+/* ── EXERCISE DETAIL MODAL ── */
+let exModalState = null; // { week, dayIdx, exIdx }
+let cardioTimerSecs = 1200, cardioTimerTotal = 1200, cardioInterval = null, cardioRunning = false;
+
+function openExModal(week, dayIdx, exIdx) {
+  const ex = DAYS[dayIdx]?.exercises[exIdx];
+  if (!ex) return;
+  exModalState = { week, dayIdx, exIdx };
+
+  const customEx     = getCustomExercise(week, dayIdx, exIdx);
+  const displayName  = customEx ? customEx.name : ex.name;
+  const imgUrl       = EX_IMAGES[ex.name];
+  const isCardio     = !!ex.cardio;
+  const formTip      = EX_FORM_TIPS[ex.name];
+  const cardioTip    = CARDIO_TIPS[ex.name];
+
+  // Header
+  document.getElementById('ex-modal-name').textContent = displayName;
+  const musclesEl = document.getElementById('ex-modal-muscles');
+  musclesEl.textContent = formTip ? formTip.muscles : (cardioTip ? cardioTip.muscles : '');
+
+  // Image
+  const imgWrap = document.getElementById('ex-modal-img-wrap');
+  imgWrap.innerHTML = imgUrl
+    ? `<img src="${imgUrl}" alt="${esc(displayName)}" onerror="this.style.display='none'">`
+    : '';
+
+  // Show/hide sections
+  document.getElementById('ex-modal-cardio-section').style.display  = isCardio  ? '' : 'none';
+  document.getElementById('ex-modal-weight-section').style.display  = !isCardio ? '' : 'none';
+
+  if (isCardio) {
+    // Cardio tips
+    const tip = cardioTip || { tip: 'Maintain steady pace and focus on breathing.', zones: '' };
+    document.getElementById('ex-modal-cardio-tip').textContent  = tip.tip;
+    document.getElementById('ex-modal-cardio-zone').textContent = tip.zones || '';
+    document.getElementById('ex-modal-cardio-zone').style.display = tip.zones ? '' : 'none';
+    // Hide form cue sections for cardio
+    document.getElementById('ex-modal-cues-section').style.display     = 'none';
+    document.getElementById('ex-modal-mistakes-section').style.display = 'none';
+    document.getElementById('ex-modal-chips').style.display            = 'none';
+    // Reset cardio timer
+    cardioTimerReset();
+    updateCardioTimerDisplay();
+  } else {
+    // Form tips
+    document.getElementById('ex-modal-cues-section').style.display     = formTip ? '' : 'none';
+    document.getElementById('ex-modal-mistakes-section').style.display = formTip ? '' : 'none';
+    document.getElementById('ex-modal-chips').style.display            = formTip ? '' : 'none';
+
+    if (formTip) {
+      // Cues
+      const cuesEl = document.getElementById('ex-modal-cues');
+      cuesEl.innerHTML = formTip.cues.map((c, i) =>
+        `<div class="ex-modal-cue"><div class="ex-modal-cue-num">${i+1}</div>${esc(c)}</div>`
+      ).join('');
+      // Mistakes
+      document.getElementById('ex-modal-mistakes').textContent = formTip.common;
+      // Chips
+      document.getElementById('ex-modal-chips').innerHTML = `
+        <div class="ex-modal-chip">🫁 <strong>Breathe:</strong> ${esc(formTip.breathe)}</div>
+        <div class="ex-modal-chip">⏱ <strong>Tempo:</strong> ${esc(formTip.tempoSuggestion || '—')}</div>`;
+    }
+
+    // Build sets grid
+    renderExModalSets(week, dayIdx, exIdx);
+    // Build progress chart
+    renderExModalProgressChart(dayIdx, exIdx);
+  }
+
+  // Check if already done
+  const isDone = isChecked(week, dayIdx, exIdx);
+  const doneBtn = document.getElementById(isCardio ? 'ex-modal-cardio-done' : 'ex-modal-done-btn');
+  if (doneBtn) {
+    doneBtn.textContent = isDone ? '✓ Completed!' : '✓ Mark as Done';
+    doneBtn.classList.toggle('done-state', isDone);
+  }
+
+  document.getElementById('ex-modal').classList.add('open');
+}
+
+function renderExModalSets(week, dayIdx, exIdx) {
+  const ex = DAYS[dayIdx]?.exercises[exIdx];
+  if (!ex || ex.cardio) return;
+  const numSets = Math.min(ex.numSets || 4, 4);
+  const grid = document.getElementById('ex-modal-sets-grid');
+  grid.innerHTML = '';
+  const feedback = document.getElementById('ex-modal-feedback');
+  if (feedback) feedback.style.display = 'none';
+
+  for (let s = 0; s < numSets; s++) {
+    const curVal  = getExWeight(week, dayIdx, exIdx, s);
+    const prevVal = week > 1 ? getExWeight(week - 1, dayIdx, exIdx, s) : '';
+
+    // PR check
+    let isPR = false;
+    if (curVal) {
+      const cv = parseFloat(curVal);
+      let prevMax = 0;
+      for (let w2 = 1; w2 <= 12; w2++) {
+        if (w2 === week) continue;
+        const pv = parseFloat(getExWeight(w2, dayIdx, exIdx, s));
+        if (!isNaN(pv) && pv > prevMax) prevMax = pv;
+      }
+      if (!isNaN(cv) && cv > prevMax && prevMax > 0) isPR = true;
+    }
+
+    const card = document.createElement('div');
+    card.className = `ex-modal-set-card${curVal ? ' has-value' : ''}${isPR ? ' is-pr' : ''}`;
+    card.id = `ex-modal-set-card-${s}`;
+    card.innerHTML = `
+      <div class="ex-modal-set-lbl">
+        Set ${s + 1}
+        <span class="ex-modal-set-pr-tag" id="modal-set-pr-${s}">${isPR ? '🔥 PR' : ''}</span>
+      </div>
+      <input class="ex-modal-set-inp" type="number" step="0.5" min="0" max="500"
+        placeholder="${currentUnit === 'kg' ? 'kg' : 'lbs'}"
+        value="${curVal}"
+        data-week="${week}" data-day="${dayIdx}" data-ex="${exIdx}" data-set="${s}"
+        oninput="onModalSetChange(this)">
+      <div class="ex-modal-set-prev">${prevVal
+        ? `Prev wk: <span>${prevVal} ${currentUnit}</span>`
+        : '<span style="color:var(--muted)">No prev data</span>'}</div>`;
+    grid.appendChild(card);
+  }
+}
+
+function onModalSetChange(inp) {
+  const week = +inp.dataset.week, dayIdx = +inp.dataset.day, exIdx = +inp.dataset.ex, setNum = +inp.dataset.set;
+  const val = parseFloat(inp.value);
+  setExWeight(week, dayIdx, exIdx, setNum, inp.value);
+
+  // Update card state
+  const card = document.getElementById(`ex-modal-set-card-${setNum}`);
+  if (card) {
+    card.classList.toggle('has-value', !!inp.value);
+    // PR check
+    let isPR = false;
+    if (!isNaN(val) && val > 0) {
+      let prevMax = 0;
+      for (let w2 = 1; w2 <= 12; w2++) {
+        if (w2 === week) continue;
+        const pv = parseFloat(getExWeight(w2, dayIdx, exIdx, setNum));
+        if (!isNaN(pv) && pv > prevMax) prevMax = pv;
+      }
+      if (val > prevMax && prevMax > 0) isPR = true;
+    }
+    card.classList.toggle('is-pr', isPR);
+    const prTag = document.getElementById(`modal-set-pr-${setNum}`);
+    if (prTag) prTag.textContent = isPR ? '🔥 PR' : '';
+    // Auto-PR detection via existing system
+    checkAutoPR(week, dayIdx, exIdx, inp.value);
+  }
+
+  // Show feedback
+  if (!isNaN(val) && val > 0) {
+    const fb = getSetFeedback(week, dayIdx, exIdx, setNum, val);
+    if (fb) showModalFeedback(fb);
+  }
+
+  // Update exercise progress badge in the week view
+  updateExerciseProgressBadge(week, dayIdx, exIdx);
+  refreshSetPRBadge(inp, week, dayIdx, exIdx, setNum, val);
+}
+
+function showModalFeedback(fb) {
+  const el = document.getElementById('ex-modal-feedback');
+  if (!el) return;
+  el.style.display = 'flex';
+  el.className = `ex-modal-feedback ${fb.cls}`;
+  document.getElementById('ex-modal-feedback-icon').textContent = fb.icon;
+  document.getElementById('ex-modal-feedback-txt').textContent  = fb.text;
+}
+
+function renderExModalProgressChart(dayIdx, exIdx) {
+  const container = document.getElementById('ex-modal-progress-chart');
+  if (!container) return;
+  // Collect Set 1 weights across all 12 weeks
+  const data = [];
+  for (let w = 1; w <= 12; w++) {
+    const v = parseFloat(getExWeight(w, dayIdx, exIdx, 0));
+    if (!isNaN(v) && v > 0) data.push({ week: w, val: v });
+  }
+  if (data.length < 2) {
+    container.innerHTML = `<div style="font-size:12px;color:var(--text2);text-align:center;padding:16px">Log Set 1 weights across multiple weeks to see your progress chart here.</div>`;
+    return;
+  }
+  const W = 320, H = 100, P = { t: 16, r: 10, b: 24, l: 36 };
+  const iW = W - P.l - P.r, iH = H - P.t - P.b;
+  const vals = data.map(d => d.val);
+  const minV = Math.min(...vals), maxV = Math.max(...vals);
+  const range = maxV - minV || 1, pad = range * 0.3;
+  const yMin = minV - pad, yMax = maxV + pad;
+  const weeks = data.map(d => d.week);
+  const xRange = (Math.max(...weeks) - Math.min(...weeks)) || 1;
+  const xS = w => P.l + (w - Math.min(...weeks)) / xRange * iW;
+  const yS = v => P.t + (1 - (v - yMin) / (yMax - yMin)) * iH;
+  const pts = data.map(d => `${xS(d.week).toFixed(1)},${yS(d.val).toFixed(1)}`);
+  const line = 'M' + pts.join(' L');
+  const area = `M${xS(data[0].week).toFixed(1)},${(P.t+iH).toFixed(1)} L${pts.join(' L')} L${xS(data[data.length-1].week).toFixed(1)},${(P.t+iH).toFixed(1)} Z`;
+
+  let yticks = '';
+  for (let i = 0; i <= 2; i++) {
+    const v = yMin + (yMax - yMin) * i / 2;
+    yticks += `<text x="${(P.l-4).toFixed(1)}" y="${(yS(v)+3).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--muted)" font-family="Plus Jakarta Sans">${v.toFixed(0)}</text>`;
+  }
+
+  container.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">
+    <defs><linearGradient id="exg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${yticks}
+    <path d="${area}" fill="url(#exg)"/>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${data.map(d => `
+      <circle cx="${xS(d.week).toFixed(1)}" cy="${yS(d.val).toFixed(1)}" r="4" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/>
+      <text x="${xS(d.week).toFixed(1)}" y="${(P.t+iH+14).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--muted)" font-family="Plus Jakarta Sans">W${d.week}</text>
+      <text x="${xS(d.week).toFixed(1)}" y="${(yS(d.val)-8).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--accent)" font-weight="700" font-family="Plus Jakarta Sans">${d.val}</text>
+    `).join('')}
+  </svg>`;
+}
+
+function markExDoneFromModal() {
+  if (!exModalState) return;
+  const { week, dayIdx, exIdx } = exModalState;
+  const wasDone = isChecked(week, dayIdx, exIdx);
+  if (!wasDone) {
+    // Use the existing toggleEx logic
+    toggleEx(week, dayIdx, exIdx);
+  }
+  const doneBtn = document.getElementById('ex-modal-done-btn') || document.getElementById('ex-modal-cardio-done');
+  if (doneBtn) {
+    doneBtn.textContent = '✓ Completed!';
+    doneBtn.classList.add('done-state');
+  }
+  // Small delay so user sees the state, then close
+  setTimeout(() => closeExModal(), 600);
+}
+
+function closeExModal() {
+  document.getElementById('ex-modal').classList.remove('open');
+  // Stop cardio timer if running
+  if (cardioRunning) cardioTimerReset();
+  exModalState = null;
+}
+
+/* ── CARDIO TIMER (in exercise modal) ── */
+function setCardioTime(secs) {
+  cardioTimerSecs = secs;
+  cardioTimerTotal = secs;
+  cardioRunning = false;
+  clearInterval(cardioInterval);
+  cardioInterval = null;
+  document.getElementById('ex-cardio-start').textContent = '▶ Start';
+  document.getElementById('ex-cardio-display').className = 'ex-cardio-timer-display';
+  updateCardioTimerDisplay();
+  // Update active preset button
+  document.querySelectorAll('.ex-cardio-preset').forEach(b => {
+    const t = parseInt(b.getAttribute('onclick').match(/\d+/)?.[0]);
+    b.classList.toggle('active', t === secs);
+  });
+}
+
+function cardioTimerToggle() {
+  if (cardioRunning) {
+    clearInterval(cardioInterval);
+    cardioInterval = null;
+    cardioRunning = false;
+    document.getElementById('ex-cardio-start').textContent = '▶ Resume';
+  } else {
+    cardioRunning = true;
+    document.getElementById('ex-cardio-start').textContent = '⏸ Pause';
+    document.getElementById('ex-cardio-display').className = 'ex-cardio-timer-display running';
+    cardioInterval = setInterval(() => {
+      cardioTimerSecs--;
+      if (cardioTimerSecs <= 0) {
+        cardioTimerSecs = 0;
+        clearInterval(cardioInterval);
+        cardioInterval = null;
+        cardioRunning = false;
+        document.getElementById('ex-cardio-display').className = 'ex-cardio-timer-display expired';
+        document.getElementById('ex-cardio-start').textContent = '▶ Start';
+        if ('vibrate' in navigator) navigator.vibrate([300,200,300,200,300]);
+        showToast('✅', "Cardio done! Great work! 🔥");
+      }
+      updateCardioTimerDisplay();
+    }, 1000);
+  }
+}
+
+function cardioTimerReset() {
+  clearInterval(cardioInterval);
+  cardioInterval = null;
+  cardioRunning = false;
+  cardioTimerSecs = cardioTimerTotal;
+  const btn = document.getElementById('ex-cardio-start');
+  if (btn) btn.textContent = '▶ Start';
+  const disp = document.getElementById('ex-cardio-display');
+  if (disp) disp.className = 'ex-cardio-timer-display';
+  updateCardioTimerDisplay();
+}
+
+function updateCardioTimerDisplay() {
+  const m = Math.floor(cardioTimerSecs / 60), s = cardioTimerSecs % 60;
+  const disp = document.getElementById('ex-cardio-display');
+  if (disp) disp.textContent = m + ':' + (s < 10 ? '0' + s : s);
 }
 
 /* ── INIT ── */

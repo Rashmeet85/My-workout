@@ -618,3 +618,309 @@ const MUSCLE_COLORS = {
   "Biceps/Triceps": "#f472b6",
   Other: "#94a3b8",
 };
+
+/* ── EXERCISE FORM TIPS & COACHING ── */
+const EX_FORM_TIPS = {
+  // Chest
+  'Flat Press (BB/Machine)': {
+    muscles: 'Chest · Triceps · Front Delts',
+    cues: ['Retract and depress scapulae — create a stable shelf', 'Bar path slightly arced — lower to lower chest, not neck', 'Drive feet into floor, press the bar up and slightly back', 'Elbows ~45–60° from torso — not flared, not tucked'],
+    common: 'Bouncing bar off chest · Butt lifting off bench · Elbows flaring wide',
+    breathe: 'Inhale on the way down. Exhale hard on the press up.',
+    tempoSuggestion: '2-1-2',
+  },
+  'Incline DB Press': {
+    muscles: 'Upper Chest · Triceps · Front Delts',
+    cues: ['Set bench 30–45°. Any higher and it becomes a shoulder press', 'Start DBs at shoulder width with palms facing forward', 'Lower with control until DBs are at chest level', 'Press up and slightly together — squeeze chest at top'],
+    common: 'Bench angle too steep · Not getting full stretch at bottom',
+    breathe: 'Inhale lowering. Exhale pressing.',
+    tempoSuggestion: '3-1-2',
+  },
+  'Cable/DB Flyes': {
+    muscles: 'Chest (mid & stretch focus)',
+    cues: ['Keep a slight elbow bend — never fully locked or too bent', 'Think "hugging a barrel" — arc motion not a press', 'Prioritize the stretch at the bottom — that\'s the growth zone', 'Control the return, don\'t let cables yank you back'],
+    common: 'Turning it into a press · Going too heavy → loses fly motion',
+    breathe: 'Inhale on the stretch. Exhale on the squeeze.',
+    tempoSuggestion: '3-0-2',
+  },
+  'Close-Grip Press / Assisted Dips': {
+    muscles: 'Triceps · Lower Chest',
+    cues: ['Grip shoulder-width or slightly narrower — no need to go ultra-close', 'Keep elbows tucked close to body on the way down', 'For dips: lean slightly forward to hit chest; upright to hit triceps', 'Full lockout at top to max out tricep contraction'],
+    common: 'Elbows flaring · Partial reps at the top · Too wide a grip',
+    breathe: 'Inhale down. Exhale on press/push up.',
+    tempoSuggestion: '2-1-2',
+  },
+  'Rope Triceps Pushdown': {
+    muscles: 'Triceps (lateral head focus)',
+    cues: ['Pin your elbows to your sides — they must not move', 'At the bottom, spread the rope apart and fully extend', 'Slow the return — don\'t let the rope drag your elbows up', 'Stand tall, slight forward lean is fine'],
+    common: 'Elbows drifting forward · No full extension at bottom · Too heavy',
+    breathe: 'Exhale on the pushdown. Inhale on return.',
+    tempoSuggestion: '2-1-2',
+  },
+  // Back
+  'Lat Pulldown / Assisted Pull-ups': {
+    muscles: 'Lats · Biceps · Rear Delts',
+    cues: ['Lean back ~10–15° — creates a better lat line of pull', 'Lead with your elbows, not your hands — think elbow to hip pocket', 'Squeeze at the bottom when bar touches upper chest', 'Control the negative — don\'t let the weight yank arms up'],
+    common: 'Using momentum · Pulling with arms not lats · Bar going behind neck',
+    breathe: 'Exhale pulling down. Inhale on the way up.',
+    tempoSuggestion: '2-1-3',
+  },
+  'Seated Cable Row': {
+    muscles: 'Mid Back · Lats · Biceps',
+    cues: ['Sit tall, slight natural arch — don\'t round at the lower back', 'Row to belly button, not to chest — keeps lats engaged', 'Squeeze shoulder blades at the end — hold 1 second', 'Allow a full stretch at the start with shoulder rounding intentionally'],
+    common: 'Swinging with momentum · Not getting full stretch at start',
+    breathe: 'Exhale rowing back. Inhale on extension.',
+    tempoSuggestion: '2-1-3',
+  },
+  'One-arm DB Row': {
+    muscles: 'Lats · Mid Back · Biceps',
+    cues: ['Brace free hand on bench — keep spine neutral and parallel to floor', 'Row DB towards your hip, not your shoulder', 'Full range of motion — let shoulder drop at the bottom for stretch', 'Think: elbow going straight back toward the ceiling'],
+    common: 'Rotating torso to lift heavier · Not getting full stretch',
+    breathe: 'Exhale rowing up. Inhale lowering.',
+    tempoSuggestion: '2-1-3',
+  },
+  'EZ-Bar/DB Curl': {
+    muscles: 'Biceps (long & short head)',
+    cues: ['Pin elbows at your sides — they are the pivot point, not a swing', 'Supinate your wrist at the top if using DBs (pinky up)', 'Don\'t let shoulders roll forward at the top', 'Slow the descent — the negative builds as much as the positive'],
+    common: 'Swinging with lower back · Elbows drifting forward · Partial reps',
+    breathe: 'Exhale curling up. Inhale lowering.',
+    tempoSuggestion: '2-1-3',
+  },
+  'Hammer Curl': {
+    muscles: 'Brachialis · Brachioradialis · Biceps',
+    cues: ['Neutral grip (thumbs up) throughout the entire movement', 'Elbows stay pinned — curl straight up', 'Can be done alternating for more focus per arm', 'Goes heavier than regular curls — brachialis is strong'],
+    common: 'Swinging · Elbows drifting · Wrist rotating (ruins the hammer grip)',
+    breathe: 'Exhale curling. Inhale lowering.',
+    tempoSuggestion: '2-1-2',
+  },
+  // Legs
+  'Squat OR Leg Press': {
+    muscles: 'Quads · Glutes · Hamstrings',
+    cues: ['Squat: brace core like you\'re about to take a punch', 'Knees track over your 2nd and 3rd toe — push them out', 'Descend until hip crease is at or below knee', 'Leg Press: don\'t let lower back peel off the pad at bottom'],
+    common: 'Knees caving in · Butt wink at depth · Forward lean on squat',
+    breathe: 'Inhale and brace at top. Exhale on the drive up.',
+    tempoSuggestion: '3-1-2',
+  },
+  'Bulgarian Split Squat': {
+    muscles: 'Quads · Glutes · Hip Flexors',
+    cues: ['Back foot elevated on bench — just the top of the foot', 'Front foot far enough forward that knee doesn\'t go way past toe', 'Keep torso upright — slight forward lean is ok for glute bias', 'Lower straight down, not forward'],
+    common: 'Front foot too close · Torso collapsing forward · Rushing reps',
+    breathe: 'Inhale lowering. Exhale driving up through front heel.',
+    tempoSuggestion: '3-1-2',
+  },
+  'Leg Extension': {
+    muscles: 'Quads (isolation)',
+    cues: ['Sit fully back in the seat — pad should hit mid-shin not ankle', 'Flex quad hard at full extension — hold 1 second', 'Control the descent — 3 count down minimum', 'Point toes slightly inward to bias VMO (inner quad)'],
+    common: 'Jerking the weight · Not achieving full extension · Pad at ankle',
+    breathe: 'Exhale extending. Inhale lowering.',
+    tempoSuggestion: '2-1-3',
+  },
+  'Walking Lunges': {
+    muscles: 'Quads · Glutes · Balance',
+    cues: ['Take a long stride — knee should NOT shoot over toe', 'Keep torso completely upright', 'Drive through the front heel to step forward', 'Back knee lightly touches or just hovers above floor'],
+    common: 'Steps too short · Leaning torso forward · Knee caving on step',
+    breathe: 'Inhale stepping down. Exhale driving up.',
+    tempoSuggestion: 'Controlled step cadence',
+  },
+  'Standing Calf Raises': {
+    muscles: 'Gastrocnemius (upper calf)',
+    cues: ['Full range of motion — deep stretch at bottom, full rise at top', 'Pause at the top for 1 second and really squeeze', 'Slow the descent — don\'t drop back down', 'Try single leg for extra difficulty'],
+    common: 'Partial reps · Going too fast · Not getting full stretch',
+    breathe: 'Exhale rising. Inhale lowering.',
+    tempoSuggestion: '2-1-3',
+  },
+  'Plank': {
+    muscles: 'Core · Transverse Abs · Stabilizers',
+    cues: ['Forearms parallel, elbows under shoulders', 'Squeeze glutes and quads — full body tension', 'Neutral spine — don\'t let hips drop or pike up', 'Push floor away with forearms for extra core activation'],
+    common: 'Hips sagging · Holding breath · Neck cranking upward',
+    breathe: 'Breathe steadily — don\'t hold breath during the hold.',
+    tempoSuggestion: 'Hold steady',
+  },
+  // Shoulders
+  'Overhead Press': {
+    muscles: 'Deltoids (all heads) · Triceps · Upper Traps',
+    cues: ['Grip just outside shoulder width — elbows slightly in front of bar', 'Press bar in a straight vertical line — head moves back, then forward', 'At the top, shrug traps up to lock out and protect shoulder', 'Core braced — don\'t hyperextend lower back'],
+    common: 'Lower back arching excessively · Pressing forward not up · Bar path drifting',
+    breathe: 'Inhale and brace at bottom. Exhale hard on the press.',
+    tempoSuggestion: '2-1-2',
+  },
+  'Lateral Raises': {
+    muscles: 'Medial Delts (side delts)',
+    cues: ['Lead with elbows, not hands — imagine pouring a jug of water', 'Raise to shoulder height only — not higher', 'Slight forward lean allows greater medial delt stretch', 'Control the descent — the negative is just as important'],
+    common: 'Using momentum · Raising too high · Shrugging traps instead of delts',
+    breathe: 'Exhale raising. Inhale lowering.',
+    tempoSuggestion: '2-0-3',
+  },
+  'Rear Delt Fly / Face Pulls': {
+    muscles: 'Rear Delts · Rotator Cuff · Mid Traps',
+    cues: ['Face pulls: rope to forehead, externally rotate at end position', 'Rear delt fly: slight bend in elbow, lead with elbows back', 'Think: trying to touch elbows together behind your back', 'Light weight, high control — rear delts are small and need precision'],
+    common: 'Too heavy → becomes a trap exercise · Not externally rotating at top',
+    breathe: 'Exhale pulling/flying back. Inhale on return.',
+    tempoSuggestion: '2-1-2',
+  },
+  // Glutes & Hamstrings
+  'Hip Thrust': {
+    muscles: 'Glutes (primary) · Hamstrings · Core',
+    cues: ['Upper back on bench, shoulders at edge — not neck or mid-back', 'Drive through heels — toes can be slightly raised', 'At the top: hips fully extended, glutes squeezed, chin tucked', 'Posterior pelvic tilt at the top to maximize glute contraction'],
+    common: 'Hyperextending lower back at top · Feet too close or too far · No pelvic tilt',
+    breathe: 'Inhale at bottom. Exhale and squeeze hard at top.',
+    tempoSuggestion: '2-1-2',
+  },
+  'Romanian Deadlift': {
+    muscles: 'Hamstrings · Glutes · Lower Back',
+    cues: ['Push hips back first — NOT bending at the knee first', 'Keep bar dragging up your legs — shins to thighs', 'Feel the stretch in the hamstrings — that\'s your depth indicator', 'Spine stays neutral throughout — no rounding'],
+    common: 'Bending knees too much (becomes a squat) · Lower back rounding · Bar drifting forward',
+    breathe: 'Inhale hinging down. Exhale driving hips forward.',
+    tempoSuggestion: '3-1-2',
+  },
+  'Hamstring Curl': {
+    muscles: 'Hamstrings (isolation)',
+    cues: ['Hips pinned down on the pad — no lifting at all', 'Curl all the way until heels touch or near glutes', 'Hold the peak contraction 1 second', 'Slow the return — don\'t let the weight fall back'],
+    common: 'Hips lifting off pad · Partial range of motion · Jerking the weight',
+    breathe: 'Exhale curling. Inhale releasing.',
+    tempoSuggestion: '2-1-3',
+  },
+  'Goblet Squat': {
+    muscles: 'Quads · Glutes · Core',
+    cues: ['Hold weight at chest — helps keep torso upright naturally', 'Elbows push knees apart at the bottom for depth', 'Sit into the squat — don\'t just bend forward', 'Great for warming up hips and practicing squat pattern'],
+    common: 'Torso collapsing forward · Knees caving · Not hitting depth',
+    breathe: 'Inhale down. Exhale up.',
+    tempoSuggestion: '3-1-2',
+  },
+  'Seated Calf Raises': {
+    muscles: 'Soleus (lower/deeper calf)',
+    cues: ['Pad on lower thigh, close to knees', 'Full stretch at bottom — don\'t shortchange the range', 'Squeeze hard at the top for 2 seconds', 'Soleus responds well to higher reps and longer time under tension'],
+    common: 'Partial range of motion · Going too fast',
+    breathe: 'Exhale rising. Inhale lowering.',
+    tempoSuggestion: '2-2-3',
+  },
+  'Core Circuit': {
+    muscles: 'Full Core · Obliques · Transverse Abs',
+    cues: ['Dead Bug: lower back glued to floor. Arm + opposite leg lower together', 'Plank: squeeze everything — quads, glutes, abs simultaneously', 'Bicycle crunches: extend fully, twist with torso not just elbow', 'Rest just enough between exercises to maintain quality'],
+    common: 'Lower back lifting on dead bug · Rushing through reps · Holding breath',
+    breathe: 'Breathe steadily — engage core without breath-holding.',
+    tempoSuggestion: 'Controlled, deliberate',
+  },
+  // Arms
+  'Chest-Supported Row': {
+    muscles: 'Mid Back · Lats · Rear Delts',
+    cues: ['Chest supported removes lower back from the equation — pure back work', 'Row to lower chest / belly — not to shoulders', 'Squeeze hard at the top — really try to touch shoulder blades together', 'Full stretch at bottom — let shoulders protract'],
+    common: 'Using momentum · Shrugging instead of rowing · Partial reps',
+    breathe: 'Exhale rowing. Inhale lowering.',
+    tempoSuggestion: '2-1-3',
+  },
+  'Lat Pulldown (light)': {
+    muscles: 'Lats · Biceps',
+    cues: ['Lighter weight = more lat isolation focus', 'Really focus on initiating with your lats, not biceps', 'Pause at the bottom and squeeze lats', 'Great opportunity to perfect your form'],
+    common: 'Pulling with arms · Not feeling it in lats',
+    breathe: 'Exhale pulling down. Inhale releasing.',
+    tempoSuggestion: '2-1-3',
+  },
+  'Superset: DB Curl + Rope Pushdown': {
+    muscles: 'Biceps + Triceps (superset)',
+    cues: ['Do all curl reps then immediately do pushdowns — no rest between', 'Antagonist superset: one muscle rests while the other works', 'Keep strict form even when fatigued — reduce weight if needed', 'Great for arm pump and time efficiency'],
+    common: 'Form breakdown when tired · Rest between exercises defeats the purpose',
+    breathe: 'Exhale on each concentric (curling up, pushing down).',
+    tempoSuggestion: '2-1-2 each',
+  },
+  'Cable Curls': {
+    muscles: 'Biceps (peak contraction focus)',
+    cues: ['Cable keeps constant tension throughout — better than free weights at top', 'Use a straight bar or EZ bar attachment', 'Fully extend at bottom to get the full stretch under load', 'Slow and controlled — no swinging'],
+    common: 'Swinging · Short-changing the bottom stretch',
+    breathe: 'Exhale curling up. Inhale releasing.',
+    tempoSuggestion: '2-1-3',
+  },
+  'Overhead Triceps Extension': {
+    muscles: 'Triceps (long head emphasis)',
+    cues: ['Arms overhead fully stretches the long head — prioritized here', 'Keep elbows pointing straight forward — don\'t let them flare', 'Only your forearms move — upper arms locked to the sides of your head', 'This is where you build the "horseshoe" look'],
+    common: 'Elbows flaring wide · Upper arms moving · Partial reps at top',
+    breathe: 'Inhale lowering. Exhale extending.',
+    tempoSuggestion: '3-1-2',
+  },
+  'Incline DB Press (light)': {
+    muscles: 'Upper Chest · Front Delts',
+    cues: ['Light means focus on muscle-mind connection, not weight moved', 'Slow it down — 4 seconds down, squeeze at top', 'Upper chest is notoriously hard to feel — use lighter weight and feel the stretch', 'Drive elbows together at the top, not just hands'],
+    common: 'Going too heavy and losing upper chest focus',
+    breathe: 'Inhale lowering. Exhale pressing.',
+    tempoSuggestion: '4-1-2',
+  },
+};
+
+// Cardio form tips
+const CARDIO_TIPS = {
+  'Cardio: Incline Walk': {
+    icon: '🚶',
+    muscles: 'Glutes · Calves · Cardiovascular',
+    tip: 'Set treadmill to 8–12% incline, 4–5 km/h. Don\'t hold the rails — it defeats the purpose. Swing arms naturally. Great low-impact fat burn.',
+    zones: 'Target: Zone 2 (can hold a conversation, slight breathlessness)',
+  },
+  'Cardio: Bike Intervals': {
+    icon: '🚴',
+    muscles: 'Quads · Cardiovascular',
+    tip: 'Alternate 30s hard sprint → 60s easy pedal. Adjust resistance so sprints feel truly hard. Keep cadence high on rest periods (80+ RPM).',
+    zones: 'Sprint: Zone 4-5. Rest: Zone 1-2',
+  },
+  'Cardio: Brisk Walk': {
+    icon: '🚶',
+    muscles: 'Full body · Cardiovascular',
+    tip: 'Brisk walk = 5–6 km/h on flat or slight incline. Arms pumping, chin up, core engaged. Ideal for recovery days — increases blood flow without adding fatigue.',
+    zones: 'Target: Zone 1-2 (easy, fully conversational)',
+  },
+  'Brisk Walk / Cycling': {
+    icon: '🚶',
+    muscles: 'Active Recovery',
+    tip: 'This is active recovery — the goal is to move, not to train. Keep intensity LOW. This helps flush lactic acid and aids muscle repair.',
+    zones: 'Zone 1 — very easy',
+  },
+  'Cardio: Intervals 30s/90s': {
+    icon: '⚡',
+    muscles: 'Full body · Cardiovascular',
+    tip: '30s all-out effort → 90s easy. Can be done on any machine or as running. The 30s must be at maximum effort — not comfortable.',
+    zones: 'Work: Zone 5. Rest: Zone 1-2',
+  },
+  'Cardio: Elliptical': {
+    icon: '🔄',
+    muscles: 'Full body · Low Impact',
+    tip: 'Set resistance so you feel it but can maintain steady pace. Use arms actively. Great for joint-friendly cardio — especially good on heavy leg days.',
+    zones: 'Target: Zone 2-3 (moderate effort)',
+  },
+  'Cardio: Stairs/Incline Walk': {
+    icon: '🏔️',
+    muscles: 'Glutes · Quads · Calves',
+    tip: 'Stair climbing hits glutes hard. Step fully — don\'t tip-toe. If using incline walk, go 10–15% incline at 4 km/h. Core tight throughout.',
+    zones: 'Target: Zone 3 (moderately hard)',
+  },
+  'Mobility & Stretching': {
+    icon: '🧘',
+    muscles: 'Flexibility · Recovery',
+    tip: 'Hold each stretch 30–45s. No bouncing. Breathe into each stretch — exhale to deepen. Focus on areas that feel tight from yesterday\'s session.',
+    zones: 'Zone 0 — recovery only',
+  },
+};
+
+// Feedback messages based on weight logged
+function getSetFeedback(week, dayIdx, exIdx, setNum, weight) {
+  const prevWk = week > 1 ? parseFloat(getExWeight(week - 1, dayIdx, exIdx, setNum)) : null;
+  const ex = DAYS[dayIdx]?.exercises[exIdx];
+  if (!ex || isNaN(weight) || weight <= 0) return null;
+
+  // Check all-time PR
+  let allTimePR = 0;
+  for (let w = 1; w <= 12; w++) {
+    const v = parseFloat(getExWeight(w, dayIdx, exIdx, setNum));
+    if (!isNaN(v) && v > allTimePR) allTimePR = v;
+  }
+  const isNewPR = weight >= allTimePR;
+
+  if (isNewPR && allTimePR > 0 && weight > allTimePR) {
+    return { icon: '🔥', text: `New all-time PR on Set ${setNum+1}! +${(weight - allTimePR).toFixed(1)}kg above previous best!`, cls: 'pr' };
+  }
+  if (prevWk && !isNaN(prevWk) && prevWk > 0) {
+    const diff = +(weight - prevWk).toFixed(1);
+    if (diff > 0) return { icon: '📈', text: `Up ${diff}kg from last week on this set. Keep progressing!`, cls: 'up' };
+    if (diff < 0) return { icon: '📉', text: `Down ${Math.abs(diff)}kg from last week. Deload? Or push a bit more next session.`, cls: 'down' };
+    return { icon: '➡️', text: `Same as last week. Next session, aim for +2.5kg on this set.`, cls: 'same' };
+  }
+  if (weight > 0) return { icon: '✅', text: `Set ${setNum+1} logged: ${weight}kg. Keep it up!`, cls: 'new' };
+  return null;
+}
